@@ -84,10 +84,62 @@ class OrdersController extends Controller
         return $order;
     }
     public function update(Request $r, $id){
+        $validated = $r->validate([
+            "delivery_address" => "nullable|string|max:255",
+            "products" => "nullable|array", // Lista de produtos
+            "products.*.id" => "nullable|integer|exists:products,id",
+            "products.*.quantity" => "nullable|integer|min:1",
+        ]);
 
+        $order = Order::find($id);
+        if(!$order){return response()->json(['message'=>'Pedido não existe', 404]);}
+        if (isset($validated['products'])) {
+            $products = $validated['products'];
+            $totalPrice = 0;
+            // Verificar se os produtos possuem estoque suficiente
+            foreach ($products as $product) {
+                $productDetails = Product::find($product['id']);
+                if ($productDetails && $productDetails->stock < $product['quantity']) {
+                    return response()->json([
+                        'message' => 'Estoque insuficiente para o produto ID: ' . $product['id'],
+                        'available_stock' => $productDetails->stock,
+                    ], 400);
+                }
+                // Calcular o preço total (somar ao valor já existente)
+                $totalPrice += $productDetails->price * $product['quantity'];
+            }
+
+            // Atualizar a tabela intermediária `order_products`
+            // Remover os produtos antigos
+            $order->products()->detach();
+
+            // Adicionar os novos produtos ao pedido
+            foreach ($products as $product) {
+                $order->products()->attach($product['id'], ['quantity' => $product['quantity']]);
+            }
+        }
+
+        // Atualizar o preço total do pedido
+        $validated['total_price'] = $totalPrice;
+
+        $order->update($validated);
+        return response()->json($order);
     }
     public function delete(Request $r, $id){
+
+        //Conferir se existe o pedido que queremos deletar
+        if(!Order::find($id)){
+            return response()->json(['message'=> 'Pedido nao existe.',404]);
+        }
+
+        //Após conferido
+        //temos de deletar todos os itens adiconado a tabela order_products
+        //que tenham o id do pedido a ser excluido/cancelado.
+        OrderProduct::where('order_id', $id)->delete();
+
+        //Após feita a exclusão, podemos deletar o pedido que desejamos.
         Order::find($id)->delete();
+
         return response()->json(['message'=> 'Pedido cancelado com sucesso'], 200);
     }
 }

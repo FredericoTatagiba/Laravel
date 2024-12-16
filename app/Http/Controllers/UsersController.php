@@ -46,9 +46,9 @@ class UsersController extends Controller
 {
     $validated = $request->validate([
         'name' => 'nullable|string|max:255',
+        'cpf'=> 'nullable|integer|digits:11',
         'email' => 'nullable|email|unique:users,email,' . $id,
         'password' => 'nullable|min:8',
-        'role' => 'nullable|in:user,admin',
     ]);
 
     $user = User::findOrFail($id);
@@ -60,7 +60,7 @@ class UsersController extends Controller
     $user->update($validated);
 
     return response()->json([
-        'message' => 'User updated successfully',
+        'message' => 'Usuario atualizado com sucesso.',
         'user' => $user,
     ]);
 

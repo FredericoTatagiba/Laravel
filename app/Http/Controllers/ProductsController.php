@@ -31,9 +31,14 @@ class ProductsController extends Controller
     }
 
     public function update(Request $r, $id){
-        $requestData = $r->all();
-        if(!(Product::find($id))){return response()->json(['message'=>'Produto não existe', 404]);}
-        $product = Product::find($id)->update($requestData);
+        $validated = $r->validate([
+            "name"=> "nullable|string|max:255",
+            "stock"=> "nullable|integer|min:0",
+            "price"=> "nullable|numeric|min:0.01",
+        ]);
+        $product = Product::find($id);
+        if(!$product){return response()->json(['message'=>'Produto não existe', 404]);}
+        $product->update($validated);
         return response()->json($product);
     }
 
