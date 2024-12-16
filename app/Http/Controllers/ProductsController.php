@@ -11,12 +11,12 @@ class ProductsController extends Controller
         //Valida o que está sendo enviado de acordo com os requesitos
         $validate = $r->validate([
             "name"=> "required|string|max:255",
-            "quantity"=> "required|integer|min:0",
+            "stock"=> "required|integer|min:0",
             "price"=> "required|numeric|min:0.01",
 
         ]);
         Product::create($validate);
-        return response()->json(['message'=>'Pedido criado com sucesso'],200);
+        return response()->json(['message'=>'Produto criado com sucesso'],200);
     }
 
     public function read(Request $r, $id){
