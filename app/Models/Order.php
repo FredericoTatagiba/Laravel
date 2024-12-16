@@ -7,11 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 class Order extends Model
 {
 
-    // const STATUS_PAID = 1;
+    const STATUS_PAID = "paid";
 
-    // const STATUS_LABEL = [
-    //     self::STATUS_PAID => "Pago",
-    // ];
+    const STATUS_LABEL = [
+         self::STATUS_PAID => "Pago",
+     ];
 
     protected $fillable = [
         "delivery_address", "total_price", "discount", "status"
@@ -23,9 +23,10 @@ class Order extends Model
             ->withPivot('quantity');
     }
 
-    // public function setStatusPaid(){
-    //     $this->status = $this::STATUS_PAID;
-    //     $this->save();
-    // }
+    public function setStatusPaid(){
+         $this->status = $this::STATUS_PAID;
+         $this->save();
+     }
+
 
 }

@@ -15,6 +15,7 @@ class OrdersController extends Controller
 
     $validated = $r->validate([
         "delivery_address" => "required|string|max:255",
+        "discount"=> "nullable|float|min:0",
         "products" => "required|array", // Lista de produtos
         "products.*.id" => "required|integer|exists:products,id",
         "products.*.quantity" => "required|integer|min:1",
@@ -44,6 +45,9 @@ class OrdersController extends Controller
 
         // Calcular preço total
         $totalPrice += $productDetails->price * $product['quantity'];
+        if($product->discount || $product->discount > 0) {
+            $totalPrice -= ($productDetails->discount * $totalPrice);
+        }
     }
     try {
         // Criar o pedido
@@ -86,6 +90,7 @@ class OrdersController extends Controller
     public function update(Request $r, $id){
         $validated = $r->validate([
             "delivery_address" => "nullable|string|max:255",
+            "discount"=> "nullable|float|min:0",
             "products" => "nullable|array", // Lista de produtos
             "products.*.id" => "nullable|integer|exists:products,id",
             "products.*.quantity" => "nullable|integer|min:1",
@@ -119,6 +124,10 @@ class OrdersController extends Controller
             }
         }
 
+        if($validated['discount'] && $validated['discount'] > 0){
+            $totalPrice -= ($totalPrice* $validated['discount']);
+        }
+
         // Atualizar o preço total do pedido
         $validated['total_price'] = $totalPrice;
 
@@ -141,5 +150,15 @@ class OrdersController extends Controller
         Order::find($id)->delete();
 
         return response()->json(['message'=> 'Pedido cancelado com sucesso'], 200);
+    }
+
+    public function paid(Request $r, $id){
+
+        $order = Order::find($id);
+        if(!$order){return response()->json(['message'=> 'Pedido nao existe.',404]);}
+        if($order->status == Order::STATUS_PAID){return response()->json(['message'=> 'Pedido já pago.',304]);}
+        $order->setStatusPaid();
+        return response()->json(['message'=> 'Pedido pago com sucesso.',200]);
+
     }
 }
