@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 
+
+//Logica do Usuario. falta o JWT
 class UsersController extends Controller
 {
     public function insert(Request $r){
