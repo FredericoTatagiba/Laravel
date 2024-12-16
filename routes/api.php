@@ -15,11 +15,11 @@ Route::get('/', function (Request $request) {
 });
 
 //Rotas Usuário
-Route::post('usuarios/cadastrar', [UsersController::class,'insert']);
-Route::get('usuarios/ver/{id}', [UsersController::class,'read']);
-Route::get('usuarios/verTodos', [UsersController::class,'all']);
-Route::put('usuarios/atualizar/{id}', [UsersController::class,'update']);
-Route::delete('usuarios/deletar/{id}', [UsersController::class,'delete']);
+Route::post('cadastrar', [UsersController::class,'insert']);
+Route::get('ver/{id}', [UsersController::class,'read']);
+Route::get('verTodos', [UsersController::class,'all']);
+Route::put('atualizar/{id}', [UsersController::class,'update']);
+Route::delete('deletar/{id}', [UsersController::class,'delete']);
 
 //Rotas Produtos
 Route::post('produto/cadastrar', [ProductsController::class,'insert']);
