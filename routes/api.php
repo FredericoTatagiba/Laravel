@@ -7,32 +7,21 @@ use App\Http\Controllers\ProductsController;
 use App\Http\Controllers\OrdersController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+// Route::get('/user', function (Request $request) {
+//     return $request->user();
+// })->middleware('auth:sanctum');
 
-Route::get('/', function (Request $request) {
-    return response()->json();
-});
+// Route::get('/', function (Request $request) {
+//     return response()->json();
+// });
 
-
-//Aqui estão algumas rotas de autenticação basica
-Route::group([
-
-    'middleware' => 'api',
-    'prefix' => 'auth'
-
-], function ($router) {
-
-    Route::post('login', [AuthController::class,'login']);
-    Route::post('logout', [AuthController::class,'logout']);
-    Route::post('refresh', [AuthController::class,'refresh']);
-    Route::post('me', [AuthController::class,'me']);
-
-});
+// Route::middleware('auth:api')->get('user', function (Request $r) {
+//     return $r->user();
+// });
 
 //Rotas Usuário
 Route::post('cadastrar', [UsersController::class,'insert']);
+Route::post('login', [UsersController::class,'login']);
 Route::get('ver/{id}', [UsersController::class,'read']);
 Route::get('verTodos', [UsersController::class,'all']);
 Route::put('atualizar/{id}', [UsersController::class,'update']);
