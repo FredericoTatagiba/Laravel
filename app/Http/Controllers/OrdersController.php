@@ -17,7 +17,6 @@ class OrdersController extends Controller
 
         $validated = $r->validate([
             "delivery_address" => "required|string|max:255",
-            "discount"=> "nullable|numeric|min:0",
             "products" => "required|array", // Lista de produtos
             "products.*.id" => "required|integer|exists:products,id",
             "products.*.quantity" => "required|integer|min:1",
@@ -110,7 +109,6 @@ class OrdersController extends Controller
     public function update(Request $r, $id){
         $validated = $r->validate([
             "delivery_address" => "nullable|string|max:255",
-            "discount"=> "nullable|numeric|min:0",
             "products" => "nullable|array", // Lista de produtos
             "products.*.id" => "nullable|integer|exists:products,id",
             "products.*.quantity" => "nullable|integer|min:1",
