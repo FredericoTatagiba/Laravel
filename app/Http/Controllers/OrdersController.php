@@ -45,7 +45,7 @@ class OrdersController extends Controller
 
         // Calcular preço total
         $totalPrice += $productDetails->price * $product['quantity'];
-        if($product->discount || $product->discount > 0) {
+        if(isset($productDetails->discount) || $productDetails->discount > 0) {
             $totalPrice -= ($productDetails->discount * $totalPrice);
         }
     }
