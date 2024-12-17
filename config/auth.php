@@ -54,6 +54,10 @@ return [
             'driver' => 'jwt',
             'provider' => 'users',
         ],
+        'admin' => [ // Guard específico para administradores
+            'driver' => 'jwt',
+            'provider' => 'admins', // Define o provider correspondente
+        ],
     ],
 
     /*
@@ -78,6 +82,10 @@ return [
             'driver' => 'eloquent',
             'model' => App\Models\User::class,
             // 'model' => env('AUTH_MODEL', App\Models\User::class),
+        ],
+        'admins' => [ // Provider específico para administradores
+            'driver' => 'eloquent',
+            'model' => App\Models\Admin::class,
         ],
 
         // 'users' => [

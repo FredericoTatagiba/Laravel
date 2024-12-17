@@ -3,10 +3,9 @@
 use App\Http\Controllers\AuthController;
 use Illuminate\Http\Request;
 use App\Http\Controllers\UsersController;
-use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AdminsController;
 use App\Http\Controllers\ProductsController;
 use App\Http\Controllers\OrdersController;
-use App\Models\Admin;
 use Illuminate\Support\Facades\Route;
 
 // Route::get('/user', function (Request $request) {
@@ -22,14 +21,14 @@ use Illuminate\Support\Facades\Route;
 // });
 
 //Rotas Administrador
-Route::post('cadastrar', [AdminController::class,'insert']);
-Route::post('login', [AdminController::class,'login']);
-Route::get('refresh', [AdminController::class,'refresh']);
-Route::get('ver/{id}', [AdminController::class,'read']);
-Route::get('verTodos', [AdminController::class,'all']);
-Route::put('atualizar/{id}', [AdminController::class,'update']);
-Route::put('alterar_descontos', [AdminController::class,'change_discount']);
-Route::delete('deletar/{id}', [AdminController::class,'delete']);
+Route::post('admin/cadastrar', [AdminsController::class,'insert']);
+Route::post('admin/login', [AdminsController::class,'login']);
+Route::get('admin/refresh', [AdminsController::class,'refresh']);
+Route::get('admin/ver/{id}', [AdminsController::class,'read']);
+Route::get('admin/verTodos', [AdminsController::class,'all']);
+Route::put('admin/atualizar/{id}', [AdminsController::class,'update']);
+Route::put('admin/alterar_descontos/{id}', [AdminsController::class,'change_discount']);
+Route::delete('admin/deletar/{id}', [AdminsController::class,'delete']);
 
 //Rotas Usuário
 Route::post('usuario/cadastrar', [UsersController::class,'insert']);
