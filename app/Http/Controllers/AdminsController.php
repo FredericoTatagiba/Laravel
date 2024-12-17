@@ -21,6 +21,10 @@ class AdminsController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:admins',
             'password' => 'required|min:8',
+            'discountOver50'=> 'nullable|numeric|min:0|max:100',
+            'discountOver100'=> 'nullable|numeric|min:0|max:100',
+            'discountOver150'=> 'nullable|numeric|min:0|max:100',
+            'discountOver200'=> 'nullable|numeric|min:0|max:100',
         ]);
 
         $validated['password'] = bcrypt($validated['password']); // Encripta a senha
@@ -129,6 +133,23 @@ class AdminsController extends Controller
         } catch (JWTException $e) {
             return response()->json(['error' => 'Não foi possível atualizar o token'], 500);
         }
+    }
+
+    //Função para alteração APENAS dos descontos
+    public function change_discount(Request $r, $id){
+        $validated = $r->validate([
+            'discountOver50'=> 'nullable|numeric|min:0|max:100',
+            'discountOver100'=> 'nullable|numeric|min:0|max:100',
+            'discountOver150'=> 'nullable|numeric|min:0|max:100',
+            'discountOver200'=> 'nullable|numeric|min:0|max:100',
+        ]);
+
+        Admin::findOrFail($id)->update($validated);
+
+        return response()->json([
+            'message' => 'Descontos alterados com sucesso.',
+        ],200);
+
     }
 
 
