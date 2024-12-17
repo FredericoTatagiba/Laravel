@@ -15,7 +15,7 @@ class OrdersController extends Controller
 
     $validated = $r->validate([
         "delivery_address" => "required|string|max:255",
-        "discount"=> "nullable|float|min:0",
+        "discount"=> "nullable|numeric|min:0",
         "products" => "required|array", // Lista de produtos
         "products.*.id" => "required|integer|exists:products,id",
         "products.*.quantity" => "required|integer|min:1",
@@ -45,8 +45,10 @@ class OrdersController extends Controller
 
         // Calcular preço total
         $totalPrice += $productDetails->price * $product['quantity'];
-        if(isset($productDetails->discount) || $productDetails->discount > 0) {
-            $totalPrice -= ($productDetails->discount * $totalPrice);
+
+        //Confere se tem desconto.
+        if (isset($validated['discount']) && $validated['discount'] > 0) {
+            $totalPrice -= ($validated['discount'] / 100) * $totalPrice;
         }
     }
     try {
@@ -90,17 +92,18 @@ class OrdersController extends Controller
     public function update(Request $r, $id){
         $validated = $r->validate([
             "delivery_address" => "nullable|string|max:255",
-            "discount"=> "nullable|float|min:0",
+            "discount"=> "nullable|numeric|min:0",
             "products" => "nullable|array", // Lista de produtos
             "products.*.id" => "nullable|integer|exists:products,id",
             "products.*.quantity" => "nullable|integer|min:1",
         ]);
 
+        $totalPrice = 0;
+
         $order = Order::find($id);
         if(!$order){return response()->json(['message'=>'Pedido não existe', 404]);}
         if (isset($validated['products'])) {
             $products = $validated['products'];
-            $totalPrice = 0;
             // Verificar se os produtos possuem estoque suficiente
             foreach ($products as $product) {
                 $productDetails = Product::find($product['id']);
@@ -124,8 +127,11 @@ class OrdersController extends Controller
             }
         }
 
-        if($validated['discount'] && $validated['discount'] > 0){
-            $totalPrice -= ($totalPrice* $validated['discount']);
+        //Confere se tem desconto novo desconto.
+        if (isset($validated['discount']) && $validated['discount'] > 0) {
+            $totalPrice -= ($validated['discount'] / 100) * $totalPrice;
+        }elseif(isset($order['discount']) && $order['discount'] > 0){
+            $totalPrice -= ($order['discount'] / 100) * $totalPrice;
         }
 
         // Atualizar o preço total do pedido

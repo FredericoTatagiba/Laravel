@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
+use App\Models\Admin;
 use Illuminate\Http\Request;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 
-//Logica do Usuario. falta o JWT
-class UsersController extends Controller
+class AdminController extends Controller
 {
     public function __construct()
     {
@@ -18,20 +17,19 @@ class UsersController extends Controller
     public function insert(Request $r){
         $validated = $r->validate([
             'name'=> 'required|string|max:255',
-            'cpf'=> 'required|integer|digits:11',
             'email'=> 'required|email|unique:users',
             'password'=> 'required|min:8'
         ]);
 
         $validated['password'] = bcrypt($validated['password']); // Encripta a senha
 
-        $user = User::create($validated);
+        $admin = Admin::create($validated);
 
-        $token = JWTAuth::fromUser($user);
+        $token = JWTAuth::fromUser($admin);
 
         return response()->json([
             'message' => 'Usuário criado com sucesso',
-            'user' => $user,
+            'user' => $admin,
             'token' => $token,
         ], 201);
     }
@@ -52,9 +50,9 @@ class UsersController extends Controller
     }
 
     public function read(Request $r, $id){
-        $user = User::find($id);
-        if(!$user){return response()->json(['message'=>'Usuario não encontrado', 404]);}
-        return response()->json($user);
+        $admin = Admin::find($id);
+        if(!$admin){return response()->json(['message'=>'Usuario não encontrado', 404]);}
+        return response()->json($admin);
 
     //     $product = Product::find($r);
     //     if(!$product){return response()->json(['message'=>'Produto não existe', 404]);}
@@ -64,41 +62,40 @@ class UsersController extends Controller
     }
 
     public function all(Request $r){
-        $user = new User();
-        $user= $user->all();
-        return $user;
+        $admin = new Admin();
+        $admin= $admin->all();
+        return $admin;
     }
 
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
             'name' => 'nullable|string|max:255',
-            'cpf'=> 'nullable|integer|digits:11',
             'email' => 'nullable|email|unique:users,email,' . $id,
             'password' => 'nullable|min:8',
         ]);
 
-        $user = User::findOrFail($id);
+        $admin = Admin::findOrFail($id);
 
         if (isset($validated['password'])) {
             $validated['password'] = bcrypt($validated['password']); // Atualiza a senha criptografada
         }
 
-        $user->update($validated);
+        $admin->update($validated);
 
         return response()->json([
             'message' => 'Usuario atualizado com sucesso.',
-            'user' => $user,
+            'user' => $admin,
         ]);
 
-        // $user = User::find(1);
-        // $user->name='Atualizado';
-        // $user->save();
-        //     return $user;
+        // $admin = Admin::find(1);
+        // $admin->name='Atualizado';
+        // $admin->save();
+        //     return $admin;
     }
 
     public function delete(Request $r, $id){
-        User::find($id)->delete();
+        Admin::find($id)->delete();
         return response()->json(['message'=> 'Usuario deletado com sucesso'], 200);
     }
 
@@ -135,4 +132,28 @@ class UsersController extends Controller
         return $this->respondWithToken($newToken);
     }
 
+    public function change_discount(Request $r, $id){
+        $validated = $r->validate([
+            'discountOver50' => 'nullable|numeric|min:0|max:100',
+            'discountOver100' => 'nullable|numeric|min:0|max:100',
+            'discountOver150' => 'nullable|numeric|min:0|max:100',
+            'discountOver200'=> 'nullable|numeric|min:0|max:100',
+        ]);
+        $admin = Admin::findOrFail($id);
+
+        $admin->update($validated);
+
+        // Preparar a resposta com os valores de desconto
+        $discounts = collect($validated)->only([
+            'discountOver50',
+            'discountOver100',
+            'discountOver150',
+            'discountOver200'
+        ])->filter();
+
+        return response()->json([
+            'message' => 'Descontos alterados com sucesso.',
+            'discounts' => $discounts,
+        ], 200);
+    }
 }
