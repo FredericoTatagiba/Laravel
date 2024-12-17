@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Route;
 //Rotas Usuário
 Route::post('cadastrar', [UsersController::class,'insert']);
 Route::post('login', [UsersController::class,'login']);
+Route::get('refresh', [UsersController::class,'refresh']);
 Route::get('ver/{id}', [UsersController::class,'read']);
 Route::get('verTodos', [UsersController::class,'all']);
 Route::put('atualizar/{id}', [UsersController::class,'update']);

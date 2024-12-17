@@ -141,6 +141,18 @@ class OrdersController extends Controller
             return response()->json(['message'=> 'Pedido nao existe.',404]);
         }
 
+        $orderProducts = OrderProduct::where('order_id', $id)->get();
+
+        // Retornar o estoque de cada item para o estoque do produto
+        foreach ($orderProducts as $orderProduct) {
+            $product = Product::find($orderProduct->product_id);
+
+            // Atualizar o estoque do produto
+            if ($product) {
+                $product->stock += $orderProduct->quantity;
+                $product->save();
+            }
+        }
         //Após conferido
         //temos de deletar todos os itens adiconado a tabela order_products
         //que tenham o id do pedido a ser excluido/cancelado.
