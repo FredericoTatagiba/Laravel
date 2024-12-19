@@ -82,6 +82,4 @@ class AdminController extends Controller
         $newToken = JWTAuth::refresh();
         return $this->respondWithToken($newToken);
     }
-
-
 }

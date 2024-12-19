@@ -50,23 +50,12 @@ class OrderController extends Controller
             $totalPrice += $productDetails->price * $product['quantity'];
         }
 
-        $admin = Admin::first();
-        //Confere qual desconto usar. Deve ter uma forma melhor de fazer isso,
-        //mas essa é a solução que achei por agora.
+        //Acessar tabela desconto e pegar o primeiro fdesconto com 
+        //valor maior que o do total price para aplicar o desconto.
+        if(1 == 1) {
 
-        if(!$admin){
-            return response()->json(['message' => 'Administrador não encontrado'], 500);
         }
-
-        if(isset($admin['discountOver200']) && $totalPrice > 200) {
-            $totalPrice -= ($admin['discountOver200'] / 100) * $totalPrice;
-        }elseif(isset($admin['discountOver150']) && $totalPrice > 150) {
-            $totalPrice -= ($admin['discountOver150'] / 100) * $totalPrice;
-        }elseif(isset($admin['discountOver100']) && $totalPrice > 100) {
-            $totalPrice -= ($admin['discountOver100'] / 100) * $totalPrice;
-        }elseif(isset($admin['discountOver50']) && $totalPrice > 50){
-            $totalPrice -= ($admin['discountOver50'] / 100) * $totalPrice;
-        }
+        
         try {
             // Criar o pedido
             $order = Order::create([
@@ -143,22 +132,11 @@ class OrderController extends Controller
             }
         }
 
-        $admin = Admin::first();
-        //Confere qual desconto usar. Deve ter uma forma melhor de fazer isso,
-        //mas essa é a solução que achei por agora.
 
-        if(!$admin){
-            return response()->json(['message' => 'Administrador não encontrado'], 500);
-        }
+        //Acessar tabela desconto e pegar o primeiro fdesconto com 
+        //valor maior que o do total price para aplicar o desconto.
+        if(1 == 1) {
 
-        if(isset($admin['discountOver200']) && $totalPrice > 200) {
-            $totalPrice -= ($admin['discountOver200'] / 100) * $totalPrice;
-        }elseif(isset($admin['discountOver150']) && $totalPrice > 150) {
-            $totalPrice -= ($admin['discountOver150'] / 100) * $totalPrice;
-        }elseif(isset($admin['discountOver100']) && $totalPrice > 100) {
-            $totalPrice -= ($admin['discountOver100'] / 100) * $totalPrice;
-        }elseif(isset($admin['discountOver50']) && $totalPrice > 50){
-            $totalPrice -= ($admin['discountOver50'] / 100) * $totalPrice;
         }
 
         // Atualizar o preço total do pedido
@@ -167,6 +145,8 @@ class OrderController extends Controller
         $order->update($validated);
         return response()->json($order);
     }
+
+    //Mudar para apenas trocar status para cancelado.
     public function delete(Request $request, $id){
 
         //Conferir se existe o pedido que queremos deletar
@@ -186,6 +166,7 @@ class OrderController extends Controller
                 $product->save();
             }
         }
+
         //Após conferido
         //temos de deletar todos os itens adiconado a tabela order_products
         //que tenham o id do pedido a ser excluido/cancelado.
@@ -200,9 +181,17 @@ class OrderController extends Controller
     public function paid(Request $request, $id){
 
         $order = Order::find($id);
-        if(!$order){return response()->json(['message'=> 'Pedido nao existe.',404]);}
-        if($order->status == Order::STATUS_PAID){return response()->json(['message'=> 'Pedido já pago.',304]);}
+
+        if(!$order) {
+            return response()->json(['message'=> 'Pedido nao existe.',404]);
+        }
+        
+        if($order->status == Order::STATUS_PAID) {
+            return response()->json(['message'=> 'Pedido já pago.',304]);
+        }
+
         $order->setStatusPaid();
+
         return response()->json(['message'=> 'Pedido pago com sucesso.',200]);
 
     }

@@ -13,8 +13,11 @@ class ProductController extends Controller
             "name"=> "required|string|max:255",
             "stock"=> "required|integer|min:0",
             "price"=> "required|numeric|min:0.01",
-
         ]);
+
+        //Por try catch
+
+        
         Product::create($validate);
         return response()->json(['message'=>'Produto criado com sucesso'],200);
     }
@@ -26,8 +29,8 @@ class ProductController extends Controller
     }
 
     public function all(Request $request){
-        $product = Product::all();
-        return $product;
+        //colocar opções de filtro.
+        return Product::all();
     }
 
     public function update(Request $request, $id){
@@ -36,6 +39,10 @@ class ProductController extends Controller
             "stock"=> "nullable|integer|min:0",
             "price"=> "nullable|numeric|min:0.01",
         ]);
+
+        //por try catch
+
+
         $product = Product::find($id);
         if(!$product){return response()->json(['message'=>'Produto não existe', 404]);}
         $product->update($validated);

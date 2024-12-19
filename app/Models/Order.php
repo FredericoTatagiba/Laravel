@@ -8,10 +8,12 @@ class Order extends Model
 {
 
     const STATUS_PAID = "paid";
+    const STATUS_PENDING = "pending";
+    const STATUS_CANCELED = "canceled";
 
-    const STATUS_LABEL = [
-         self::STATUS_PAID => "Pago",
-     ];
+    // const STATUS_LABEL = [
+    //      self::STATUS_PAID => "Pago",
+    //  ];
 
     protected $fillable = [
         "delivery_address", "total_price", "discount", "status",

@@ -10,6 +10,8 @@ class Product extends Model
         "name", "stock","price"
     ] ;
 
+    //Apagar essa dunção de belongstomany e por em orderProduct.
+    //Pesquiar sobre
     public function orders(){
         return $this->belongsToMany(Order::class,"order_products","product_id","order_id")->withPivot('quantity');
     }

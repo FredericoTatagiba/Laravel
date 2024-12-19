@@ -36,10 +36,6 @@ class Admin extends Authenticatable implements JWTSubject
         'name',
         'email',
         'password',
-        'discountOver50',
-        'discountOver100',
-        'discountOver150',
-        'discountOver200',
     ];
 
     protected $hidden = [
