@@ -9,7 +9,7 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 
 use Illuminate\Http\Request;
 
-class OrdersController extends Controller
+class OrderController extends Controller
 {
     //Aqui é onde vai ficar toda a logica de pedido.
     public function insert(Request $request)

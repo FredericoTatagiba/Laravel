@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use Illuminate\Http\Request;
 
-class ProductsController extends Controller
+class ProductController extends Controller
 {
     public function insert(Request $request){
         //Valida o que está sendo enviado de acordo com os requesitos

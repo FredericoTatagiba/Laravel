@@ -8,7 +8,7 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 
 //Logica do Usuario. falta o JWT
-class UsersController extends Controller
+class UserController extends Controller
 {
     public function __construct()
     {
