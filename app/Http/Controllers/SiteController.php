@@ -27,9 +27,9 @@ class SiteController extends Controller
         return view("exit");
     }
 
-    public function users( Request $r){
+    public function users( Request $request){
         $data = [
-            'id' => $r->id
+            'id' => $request->id
         ];
         return view("users", $data);
     }

@@ -16,8 +16,8 @@ use Illuminate\Support\Facades\Route;
 //     return response()->json();
 // });
 
-// Route::middleware('auth:api')->get('user', function (Request $r) {
-//     return $r->user();
+// Route::middleware('auth:api')->get('user', function (Request $request) {
+//     return $request->user();
 // });
 
 //Rotas Administrador

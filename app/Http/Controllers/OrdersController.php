@@ -12,10 +12,10 @@ use Illuminate\Http\Request;
 class OrdersController extends Controller
 {
     //Aqui é onde vai ficar toda a logica de pedido.
-    public function insert(Request $r)
+    public function insert(Request $request)
     {
 
-        $validated = $r->validate([
+        $validated = $request->validate([
             "delivery_address" => "required|string|max:255",
             "products" => "required|array", // Lista de produtos
             "products.*.id" => "required|integer|exists:products,id",
@@ -97,17 +97,17 @@ class OrdersController extends Controller
         }
     }
 
-    public function read(Request $r, $id){
+    public function read(Request $request, $id){
         $order = Order::find($id);
         if(!$order){return response()->json(['message'=>'Pedido não encontrado', 404]);}
         return response()->json($order);
     }
-    public function all(Request $r){
+    public function all(Request $request){
         $order = Order::all();
         return $order;
     }
-    public function update(Request $r, $id){
-        $validated = $r->validate([
+    public function update(Request $request, $id){
+        $validated = $request->validate([
             "delivery_address" => "nullable|string|max:255",
             "products" => "nullable|array", // Lista de produtos
             "products.*.id" => "nullable|integer|exists:products,id",
@@ -167,7 +167,7 @@ class OrdersController extends Controller
         $order->update($validated);
         return response()->json($order);
     }
-    public function delete(Request $r, $id){
+    public function delete(Request $request, $id){
 
         //Conferir se existe o pedido que queremos deletar
         if(!Order::find($id)){
@@ -197,7 +197,7 @@ class OrdersController extends Controller
         return response()->json(['message'=> 'Pedido cancelado com sucesso'], 200);
     }
 
-    public function paid(Request $r, $id){
+    public function paid(Request $request, $id){
 
         $order = Order::find($id);
         if(!$order){return response()->json(['message'=> 'Pedido nao existe.',404]);}

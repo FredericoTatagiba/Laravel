@@ -15,8 +15,8 @@ class UsersController extends Controller
         // Protege todas as rotas, exceto o login e registro
         $this->middleware('auth:api', ['except' => ['login', 'insert']]);
     }
-    public function insert(Request $r){
-        $validated = $r->validate([
+    public function insert(Request $request){
+        $validated = $request->validate([
             'name'=> 'required|string|max:255',
             'cpf'=> 'required|integer|digits:11',
             'email'=> 'required|email|unique:users',
@@ -51,19 +51,19 @@ class UsersController extends Controller
         return $this->respondWithToken($token);
     }
 
-    public function read(Request $r, $id){
+    public function read(Request $request, $id){
         $user = User::find($id);
         if(!$user){return response()->json(['message'=>'Usuario não encontrado', 404]);}
         return response()->json($user);
 
-    //     $product = Product::find($r);
+    //     $product = Product::find($request);
     //     if(!$product){return response()->json(['message'=>'Produto não existe', 404]);}
 
     //     return response()->json($product);
     // }
     }
 
-    public function all(Request $r){
+    public function all(Request $request){
         $user = new User();
         $user= $user->all();
         return $user;
@@ -97,7 +97,7 @@ class UsersController extends Controller
         //     return $user;
     }
 
-    public function delete(Request $r, $id){
+    public function delete(Request $request, $id){
         User::find($id)->delete();
         return response()->json(['message'=> 'Usuario deletado com sucesso'], 200);
     }

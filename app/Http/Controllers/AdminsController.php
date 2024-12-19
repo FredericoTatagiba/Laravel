@@ -136,8 +136,8 @@ class AdminsController extends Controller
     }
 
     //Função para alteração APENAS dos descontos
-    public function change_discount(Request $r, $id){
-        $validated = $r->validate([
+    public function change_discount(Request $request, $id){
+        $validated = $request->validate([
             'discountOver50'=> 'nullable|numeric|min:0|max:100',
             'discountOver100'=> 'nullable|numeric|min:0|max:100',
             'discountOver150'=> 'nullable|numeric|min:0|max:100',
