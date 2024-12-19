@@ -52,11 +52,7 @@ return [
         ],
         'api' => [
             'driver' => 'jwt',
-            'provider' => 'users',
-        ],
-        'admin' => [ // Guard específico para administradores
-            'driver' => 'jwt',
-            'provider' => 'admins', // Define o provider correspondente
+            'provider' => 'admins',
         ],
     ],
 

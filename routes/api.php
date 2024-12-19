@@ -21,31 +21,27 @@ use Illuminate\Support\Facades\Route;
 // });
 
 //Rotas Administrador
-Route::post('admin/cadastrar', [AdminController::class,'insert']);
-Route::post('admin/login', [AdminController::class,'login']);
-Route::get('admin/refresh', [AdminController::class,'refresh']);
-Route::get('admin/ver/{id}', [AdminController::class,'read']);
-Route::get('admin/verTodos', [AdminController::class,'all']);
-Route::put('admin/atualizar/{id}', [AdminController::class,'update']);
-Route::put('admin/alterar_descontos/{id}', [AdminController::class,'change_discount']);
-Route::delete('admin/deletar/{id}', [AdminController::class,'delete']);
+Route::post('register', [AdminController::class,'insert']);
+Route::post('login', [AdminController::class,'login']);
+Route::get('{id}', [AdminController::class,'read']);
+Route::get('verTodos', [AdminController::class,'all']);
+Route::put('{id}', [AdminController::class,'update']);
+Route::delete('{id}', [AdminController::class,'delete']);
 
 //Rotas Usuário
 Route::post('usuario/cadastrar', [UserController::class,'insert']);
-Route::post('usuario/login', [UserController::class,'login']);
-Route::get('usuario/refresh', [UserController::class,'refresh']);
-Route::get('usuario/ver/{id}', [UserController::class,'read']);
+Route::get('usuario/{id}', [UserController::class,'read']);
 Route::get('usuario/verTodos', [UserController::class,'all']);
-Route::put('usuario/atualizar/{id}', [UserController::class,'update']);
-Route::delete('usuario/deletar/{id}', [UserController::class,'delete']);
+Route::put('usuario/{id}', [UserController::class,'update']);
+Route::delete('usuario/{id}', [UserController::class,'delete']);
 
 // Rotas Produtos (Protegidas com JWT e acessado apenas com admin)
-Route::middleware('auth:admin')->group(function () {
+Route::middleware('auth:api')->group(function () {
     Route::post('produto/cadastrar', [ProductController::class,'insert']);
-    Route::get('produto/ver/{id}', [ProductController::class,'read']);
+    Route::get('produto/{id}', [ProductController::class,'read']);
     Route::get('produto/verTodos', [ProductController::class,'all']);
-    Route::put('produto/atualizar/{id}', [ProductController::class,'update']);
-    Route::delete('produto/deletar/{id}', [ProductController::class,'delete']);
+    Route::put('produto/{id}', [ProductController::class,'update']);
+    Route::delete('produto/{id}', [ProductController::class,'delete']);
 });
 
 // Rotas Pedidos (Protegidas com JWT)
