@@ -48,7 +48,7 @@ class OrderController extends Controller
         $discount = Discount::orderBy('price', 'desc')
             ->where('price', '<', $totalPrice)->first();
         if(!$discount) {
-            $discount = 0;
+            $discount->discount = 0;
         } else {
             $totalPrice -= ($totalPrice * $discount->discount)/100;
         }
@@ -74,7 +74,7 @@ class OrderController extends Controller
                     'quantity' => $product['quantity'],
                     'unity_price' => $productDetails->price,
                 ]);
-                
+
                 // Atualizar o estoque do produto
                 $productDetails->decrement('stock', $product['quantity']);
             }
