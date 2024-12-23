@@ -6,7 +6,7 @@ use App\Http\Requests\OrderFormRequest;
 use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\Product;
-use App\Models\Admin;
+use App\Models\Discount;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 use Illuminate\Http\Request;
@@ -45,10 +45,13 @@ class OrderController extends Controller
             $totalPrice += $productDetails->price * $product['quantity'];
         }
 
-        //Acessar tabela desconto e pegar o primeiro fdesconto com 
-        //valor maior que o do total price para aplicar o desconto.
-        if(1 == 1) {
-
+        //Acessar tabela desconto e pegar o valor para aplicar.
+        $discount = Discount::orderBy('price', 'desc')
+            ->where('price', '<', $totalPrice)->first();
+        if(!$discount) {
+            $discount = 0;
+        } else {
+            $totalPrice -= ($totalPrice * $discount->discount)/100;
         }
         
         try {
@@ -101,7 +104,7 @@ class OrderController extends Controller
         
         }
 
-        if (isset($validated['products'])) {
+        if (isset($request['products'])) {
 
             $products = $request['products'];
             
@@ -131,14 +134,17 @@ class OrderController extends Controller
             }
         }
 
-        //Acessar tabela desconto e pegar o primeiro desconto com 
-        //valor maior que o do total price para aplicar o desconto.
-        if(1 == 1) {
-
+        //Acessar tabela desconto e pega o valor para aplicar.
+        $discount = Discount::orderBy('price', 'desc')
+            ->where('price', '<', $totalPrice)->first();
+        if(!$discount) {
+            $discount = 0;
+        } else {
+            $totalPrice -= ($totalPrice * $discount->discount)/100;
         }
 
         // Atualizar o preço total do pedido
-        $request['total_price'] = round($totalPrice, 2);
+        $request['total_price'] = $totalPrice;
 
         $order->update($request);
         return response()->json($order);

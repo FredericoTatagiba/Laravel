@@ -42,7 +42,7 @@ class ProductController extends Controller
         }    
     }
 
-    public function destroy(Request $request, $id){
+    public function delete(Request $request, $id){
         Product::find($id)->delete();
         return response()->json(['message'=> 'Produto apagado com sucesso', 200]);
     }

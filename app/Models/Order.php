@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Client;
 
 class Order extends Model
 {
@@ -16,19 +17,28 @@ class Order extends Model
     //  ];
 
     protected $fillable = [
-        "delivery_address", "total_price", "discount", "status",
+        "delivery_address", "total_price", "status", "discount",
     ];
 
     public function products()
     {
-        return $this->belongsToMany(Product::class, 'order_products', 'order_id', 'product_id')
-            ->withPivot('quantity');
+        return $this->hasMany(Product::class);
     }
+
+    public function user()
+    {
+        return $this->belongsTo(Client::class);
+    }   
 
     public function setStatusPaid(){
          $this->status = $this::STATUS_PAID;
          $this->save();
-     }
+    }
+
+    public function setStatusCanceled(){
+        $this->status = $this::STATUS_CANCELED;
+        $this->save();
+    }
 
 
 }

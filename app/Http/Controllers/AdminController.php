@@ -13,7 +13,7 @@ class AdminController extends Controller
     public function __construct()
     {
         // Protege todas as rotas, exceto o login e registro
-        $this->middleware('auth:api', ['except' => ['login', 'insert']]);
+        $this->middleware('auth:api', ['except' => ['login', 'store']]);
     }
 
     public function store(AdminFormRequest $request){
@@ -45,7 +45,7 @@ class AdminController extends Controller
         }
     }
 
-    public function destroy(Admin $admin){ 
+    public function delete(Admin $admin){ 
         if($admin->delete()){
             return response()->json([
                 'message' => 'Administrador deletado com sucesso',

@@ -1,55 +1,74 @@
 <?php
 
-use App\Http\Controllers\AuthController;
-use Illuminate\Http\Request;
-use App\Http\Controllers\UserController;
+use App\Http\Controllers\ClientController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\DiscountController;
+use App\Models\Admin;
 use Illuminate\Support\Facades\Route;
 
-// Route::get('/user', function (Request $request) {
-//     return $request->user();
-// })->middleware('auth:sanctum');
-
-// Route::get('/', function (Request $request) {
-//     return response()->json();
-// });
-
-// Route::middleware('auth:api')->get('user', function (Request $request) {
-//     return $request->user();
-// });
+Route::get('/', function () {
+    return redirect('index');
+});
 
 //Rotas Administrador
-Route::post('register', [AdminController::class,'store']);
-Route::post('login', [AdminController::class,'login']);
-Route::get('{id}', [AdminController::class,'read']);
-Route::get('verTodos', [AdminController::class,'all']);
-Route::put('{id}', [AdminController::class,'update']);
-Route::delete('{id}', [AdminController::class,'destroy']);
-
-//Rotas Usuário
-Route::post('usuario/cadastrar', [UserController::class,'store']);
-Route::get('usuario/{id}', [UserController::class,'read']);
-Route::get('usuario/verTodos', [UserController::class,'all']);
-Route::put('usuario/{id}', [UserController::class,'update']);
-Route::delete('usuario/{id}', [UserController::class,'destroy']);
-
-// Rotas Produtos (Protegidas com JWT e acessado apenas com admin)
-Route::middleware('auth:api')->group(function () {
-    Route::post('produto/cadastrar', [ProductController::class,'store']);
-    Route::get('produto/{id}', [ProductController::class,'read']);
-    Route::get('produto/verTodos', [ProductController::class,'all']);
-    Route::put('produto/{id}', [ProductController::class,'update']);
-    Route::delete('produto/{id}', [ProductController::class,'destroy']);
+//Em tese a rota fica assim /admin/register
+Route::prefix('admin')
+    ->controller(AdminController::class)
+    ->group(function () {
+        Route::post('register', 'store');
+        Route::post('login','login');
+        Route::get('{id}','read');
+        Route::get('all','all');
+        Route::put('{id}','update');
+        Route::delete('{id}','delete');
 });
+
+//Rotas Usuário (Protegidas com JWT)
+Route::prefix('client')
+    ->controller(ClientController::class)
+    ->middleware('auth:api')
+    ->group(function () {
+        Route::post('register', 'store');
+        Route::get('{id}','read');
+        Route::get('','all');
+        Route::put('{id}','update');
+        Route::delete('{id}','delete');
+});
+
+
+// Rotas Produtos (Protegidas com JWT)
+Route::prefix('product')
+    ->controller(ProductController::class)
+    ->middleware('auth:api')
+    ->group(function () {
+        Route::post('register', 'store');
+        Route::get('{id}','read');
+        Route::get('all','all');
+        Route::put('{id}','update');
+        Route::delete('{id}','delete');
+});
+
 
 // Rotas Pedidos (Protegidas com JWT)
-Route::middleware('auth:api')->group(function () {
-    Route::post('pedido/fazer', [OrderController::class, 'store']);
-    Route::get('pedido/ver/{id}', [OrderController::class, 'read']);
-    Route::get('pedido/verTodos', [OrderController::class, 'all']);
-    Route::put('pedido/atualizar/{id}', [OrderController::class, 'update']);
-    Route::delete('pedido/cancelar/{id}', [OrderController::class, 'destroy']);
+Route::prefix('order')
+    ->controller(OrderController::class)
+    ->middleware('auth:api')
+    ->group(function () {
+        Route::post('register', 'store');
+        Route::get('{id}','read');
+        Route::get('all','all');
+        Route::put('{id}','update');
+        Route::delete('{id}','delete');
 });
 
+Route::prefix('discount')
+    ->controller(OrderController::class)
+    ->middleware('auth:api')
+    ->group(function () {
+        Route::post('register', 'store');
+        Route::get('{id}','read');
+        Route::put('{id}','update');
+        Route::delete('{id}','delete');
+    });

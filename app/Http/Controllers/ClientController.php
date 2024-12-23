@@ -3,13 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ClientFormRequest;
-use App\Models\User;
+use App\Models\Client;
 use Illuminate\Http\Request;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 
 //Logica do Usuario. falta o JWT
-class UserController extends Controller
+class ClientController extends Controller
 {
     public function __construct()
     {
@@ -18,7 +18,7 @@ class UserController extends Controller
     }
     public function store(ClientFormRequest $request){
         try{
-            $user = User::create($request->all());
+            $user = Client::create($request->all());
             return response()->json([
                 'message' => 'Usuário criado com sucesso',
                 'user' => $user,
@@ -33,7 +33,7 @@ class UserController extends Controller
 
     public function read(Request $request, $id){
 
-        $user = User::find($id);
+        $user = Client::find($id);
         
         if(!$user) {
             return response()->json(['message'=>'Usuario não encontrado', 404]);
@@ -43,10 +43,10 @@ class UserController extends Controller
     }
 
     public function all(Request $request){
-        // $user = new User();
+        // $user = new Client();
         // $user= $user->all();
 
-        return User::get();
+        return Client::get();
     }
 
     public function update(Request $request, $id)
@@ -57,7 +57,7 @@ class UserController extends Controller
             'email' => 'nullable|email|unique:users,email,' . $id,
         ]);
 
-        $user = User::findOrFail($id);
+        $user = Client::findOrFail($id);
 
         $user->update($validated);
 
@@ -68,7 +68,7 @@ class UserController extends Controller
     }
 
     public function delete(Request $request, $id){
-        User::find($id)->delete();
+        Client::find($id)->delete();
         return response()->json(['message'=> 'Usuario deletado com sucesso'], 200);
     }
 

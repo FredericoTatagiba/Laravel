@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->float('price');
             $table->float('discount');
-            $table->timestamps();
         });
     }
 
