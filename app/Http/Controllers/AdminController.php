@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\AdminFormRequest;
 use App\Models\Admin;
 use Illuminate\Http\Request;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -15,16 +16,10 @@ class AdminController extends Controller
         $this->middleware('auth:api', ['except' => ['login', 'insert']]);
     }
 
-    public function create(Request $request){
-        $validated = $request->validate([
-            'name'=> 'required|string|max:255',
-            'email'=> 'required|email|unique:users',
-            'password'=> 'required|min:8'
-        ]);
+    public function store(AdminFormRequest $request){
+        $request['password'] = bcrypt($request['password']); // Encripta a senha
 
-        $validated['password'] = bcrypt($validated['password']); // Encripta a senha
-
-        $admin = Admin::create($validated);
+        $admin = Admin::create($request->all());
 
         $token = JWTAuth::fromUser($admin);
 
@@ -35,6 +30,56 @@ class AdminController extends Controller
         ], 201);
     }
 
+    public function update(AdminFormRequest $request){
+        $admin = Admin::findOrFail($request->id);
+        if($admin->update($request->all())){
+            return response()->json([
+                'message' => 'Administrador atualizado com sucesso',
+                'user' => $admin,
+            ]);
+        }else{
+            return response()->json([
+                'message' => 'Falha ao atualizar administrador',
+                'user' => $admin,
+            ]);
+        }
+    }
+
+    public function destroy(Admin $admin){ 
+        if($admin->delete()){
+            return response()->json([
+                'message' => 'Administrador deletado com sucesso',
+            ]);
+        }else{
+            return response()->json([
+                'message' => 'Falha ao deletar administrador',
+            ]);
+        }
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     public function login(Request $request)
     {
         $credentials = $request->only('email', 'password');
@@ -82,4 +127,6 @@ class AdminController extends Controller
         $newToken = JWTAuth::refresh();
         return $this->respondWithToken($newToken);
     }
+
+
 }

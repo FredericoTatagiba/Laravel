@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ClientFormRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -15,20 +16,19 @@ class UserController extends Controller
         // Protege todas as rotas, exceto o login e registro
         $this->middleware('auth:api', ['except' => ['login', 'insert']]);
     }
-    public function insert(Request $request){
-        $validated = $request->validate([
-            'name'=> 'required|string|max:255',
-            'cpf'=> 'required|string|digits:11',
-            'email'=> 'required|email|unique:users'
-        ]);
+    public function store(ClientFormRequest $request){
+        try{
+            $user = User::create($request->all());
+            return response()->json([
+                'message' => 'Usuário criado com sucesso',
+                'user' => $user,
+            ], 201);
 
-
-        $user = User::create($validated);
-
-        return response()->json([
-            'message' => 'Usuário criado com sucesso',
-            'user' => $user,
-        ], 201);
+        } catch(JWTException $e) {
+            return response()->json([
+                'message' => 'Falha ao criar usuário',
+            ], 500);
+        }
     }
 
     public function read(Request $request, $id){

@@ -12,13 +12,11 @@ class User extends Authenticatable implements JWTSubject
 {
     use Notifiable;
 
-    // Rest omitted for brevity
-
     /**
-     * Get the identifier that will be stored in the subject claim of the JWT.
-     *
-     * @return mixed
-     */
+         * Get the identifier that will be stored in the subject claim of the JWT.
+         *
+         * @return mixed
+    */
     public function getJWTIdentifier()
     {
         return $this->getKey();
@@ -37,19 +35,12 @@ class User extends Authenticatable implements JWTSubject
         'name',
         'cpf',
         'email',
-        'password'
-    ];
-
-    protected $hidden = [
-        'password',
-        'remember_token',
     ];
 
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
         ];
     }
 

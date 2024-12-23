@@ -17,7 +17,7 @@ class Order extends Model
 
     protected $fillable = [
         "delivery_address", "total_price", "discount", "status",
-    ] ;
+    ];
 
     public function products()
     {

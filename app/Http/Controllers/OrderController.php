@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Http\Controllers;
+
+use App\Http\Requests\OrderFormRequest;
 use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\Product;
@@ -12,20 +14,13 @@ use Illuminate\Http\Request;
 class OrderController extends Controller
 {
     //Aqui é onde vai ficar toda a logica de pedido.
-    public function insert(Request $request)
+    public function store(OrderFormRequest $request)
     {
-
-        $validated = $request->validate([
-            "delivery_address" => "required|string|max:255",
-            "products" => "required|array", // Lista de produtos
-            "products.*.id" => "required|integer|exists:products,id",
-            "products.*.quantity" => "required|integer|min:1",
-        ]);
 
         $user = JWTAuth::user();
         // $admin = ;
         // Validar estoque dos produtos
-        $products = $validated['products'];
+        $products = $request['products'];
         $totalPrice = 0;
 
         foreach ($products as $product) {
@@ -59,7 +54,7 @@ class OrderController extends Controller
         try {
             // Criar o pedido
             $order = Order::create([
-                'delivery_address' => $validated['delivery_address'],
+                'delivery_address' => $request['delivery_address'],
                 'total_price' => round($totalPrice, 2),
                 'status' => 'pending',
                 'user_id'=> $user->id,
@@ -95,28 +90,32 @@ class OrderController extends Controller
         $order = Order::all();
         return $order;
     }
-    public function update(Request $request, $id){
-        $validated = $request->validate([
-            "delivery_address" => "nullable|string|max:255",
-            "products" => "nullable|array", // Lista de produtos
-            "products.*.id" => "nullable|integer|exists:products,id",
-            "products.*.quantity" => "nullable|integer|min:1",
-        ]);
+    public function update(OrderFormRequest $request, $id){
 
         $totalPrice = 0;
 
         $order = Order::find($id);
-        if(!$order){return response()->json(['message'=>'Pedido não existe', 404]);}
+        if(!$order) {
+
+            return response()->json(['message'=>'Pedido não existe', 404]);
+        
+        }
+
         if (isset($validated['products'])) {
-            $products = $validated['products'];
+
+            $products = $request['products'];
+            
             // Verificar se os produtos possuem estoque suficiente
             foreach ($products as $product) {
+
                 $productDetails = Product::find($product['id']);
                 if ($productDetails && $productDetails->stock < $product['quantity']) {
+                    
                     return response()->json([
                         'message' => 'Estoque insuficiente para o produto ID: ' . $product['id'],
                         'available_stock' => $productDetails->stock,
                     ], 400);
+                
                 }
                 // Calcular o preço total (somar ao valor já existente)
                 $totalPrice += $productDetails->price * $product['quantity'];
@@ -132,17 +131,16 @@ class OrderController extends Controller
             }
         }
 
-
-        //Acessar tabela desconto e pegar o primeiro fdesconto com 
+        //Acessar tabela desconto e pegar o primeiro desconto com 
         //valor maior que o do total price para aplicar o desconto.
         if(1 == 1) {
 
         }
 
         // Atualizar o preço total do pedido
-        $validated['total_price'] = round($totalPrice, 2);
+        $request['total_price'] = round($totalPrice, 2);
 
-        $order->update($validated);
+        $order->update($request);
         return response()->json($order);
     }
 

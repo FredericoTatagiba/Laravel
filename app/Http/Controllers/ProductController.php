@@ -2,24 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ProductFormRequest;
 use App\Models\Product;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
-    public function insert(Request $request){
-        //Valida o que está sendo enviado de acordo com os requesitos
-        $validate = $request->validate([
-            "name"=> "required|string|max:255",
-            "stock"=> "required|integer|min:0",
-            "price"=> "required|numeric|min:0.01",
-        ]);
-
-        //Por try catch
-
-        
-        Product::create($validate);
-        return response()->json(['message'=>'Produto criado com sucesso'],200);
+    public function store(ProductFormRequest $request){
+        try{
+            $product = Product::create($request->all());
+            return response()->json(['message'=>'Produto criado com sucesso'],200);
+        }catch(\Exception $e){
+            return response()->json(['message'=> 'Falha ao criar produto'],500);
+        }
     }
 
     public function read(Request $request, $id){
@@ -33,23 +28,21 @@ class ProductController extends Controller
         return Product::all();
     }
 
-    public function update(Request $request, $id){
-        $validated = $request->validate([
-            "name"=> "nullable|string|max:255",
-            "stock"=> "nullable|integer|min:0",
-            "price"=> "nullable|numeric|min:0.01",
-        ]);
+    public function update(ProductFormRequest $request, $id){
+        try{
+            $product = Product::find($id);
+            if(!$product) {
+                return response()->json(['message'=>'Produto não existe', 404]);
+            }
+            $product->update($request->all());
+            return response()->json($product);
 
-        //por try catch
-
-
-        $product = Product::find($id);
-        if(!$product){return response()->json(['message'=>'Produto não existe', 404]);}
-        $product->update($validated);
-        return response()->json($product);
+        } catch(\Exception $e) {
+            return response()->json(['message'=> 'Falha ao atualizar produto'],500);
+        }    
     }
 
-    public function delete(Request $request, $id){
+    public function destroy(Request $request, $id){
         Product::find($id)->delete();
         return response()->json(['message'=> 'Produto apagado com sucesso', 200]);
     }

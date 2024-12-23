@@ -21,35 +21,35 @@ use Illuminate\Support\Facades\Route;
 // });
 
 //Rotas Administrador
-Route::post('register', [AdminController::class,'insert']);
+Route::post('register', [AdminController::class,'store']);
 Route::post('login', [AdminController::class,'login']);
 Route::get('{id}', [AdminController::class,'read']);
 Route::get('verTodos', [AdminController::class,'all']);
 Route::put('{id}', [AdminController::class,'update']);
-Route::delete('{id}', [AdminController::class,'delete']);
+Route::delete('{id}', [AdminController::class,'destroy']);
 
 //Rotas Usuário
-Route::post('usuario/cadastrar', [UserController::class,'insert']);
+Route::post('usuario/cadastrar', [UserController::class,'store']);
 Route::get('usuario/{id}', [UserController::class,'read']);
 Route::get('usuario/verTodos', [UserController::class,'all']);
 Route::put('usuario/{id}', [UserController::class,'update']);
-Route::delete('usuario/{id}', [UserController::class,'delete']);
+Route::delete('usuario/{id}', [UserController::class,'destroy']);
 
 // Rotas Produtos (Protegidas com JWT e acessado apenas com admin)
 Route::middleware('auth:api')->group(function () {
-    Route::post('produto/cadastrar', [ProductController::class,'insert']);
+    Route::post('produto/cadastrar', [ProductController::class,'store']);
     Route::get('produto/{id}', [ProductController::class,'read']);
     Route::get('produto/verTodos', [ProductController::class,'all']);
     Route::put('produto/{id}', [ProductController::class,'update']);
-    Route::delete('produto/{id}', [ProductController::class,'delete']);
+    Route::delete('produto/{id}', [ProductController::class,'destroy']);
 });
 
 // Rotas Pedidos (Protegidas com JWT)
 Route::middleware('auth:api')->group(function () {
-    Route::post('pedido/fazer', [OrderController::class, 'insert']);
+    Route::post('pedido/fazer', [OrderController::class, 'store']);
     Route::get('pedido/ver/{id}', [OrderController::class, 'read']);
     Route::get('pedido/verTodos', [OrderController::class, 'all']);
     Route::put('pedido/atualizar/{id}', [OrderController::class, 'update']);
-    Route::delete('pedido/cancelar/{id}', [OrderController::class, 'delete']);
+    Route::delete('pedido/cancelar/{id}', [OrderController::class, 'destroy']);
 });
 
