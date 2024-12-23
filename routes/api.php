@@ -9,7 +9,7 @@ use App\Models\Admin;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return redirect('index');
+    return redirect('/');
 });
 
 //Rotas Administrador
@@ -17,12 +17,12 @@ Route::get('/', function () {
 Route::prefix('admin')
     ->controller(AdminController::class)
     ->group(function () {
-        Route::post('register', 'store');
-        Route::post('login','login');
-        Route::get('{id}','read');
-        Route::get('all','all');
-        Route::put('{id}','update');
-        Route::delete('{id}','delete');
+        Route::post('/register', 'register');
+        Route::post('/login','login')->name('login');
+        Route::get('/{id}','read');
+        Route::get('/all','all');
+        Route::put('/{id}','update');
+        Route::delete('/{id}','delete');
 });
 
 //Rotas Usuário (Protegidas com JWT)
@@ -30,11 +30,11 @@ Route::prefix('client')
     ->controller(ClientController::class)
     ->middleware('auth:api')
     ->group(function () {
-        Route::post('register', 'store');
-        Route::get('{id}','read');
-        Route::get('','all');
-        Route::put('{id}','update');
-        Route::delete('{id}','delete');
+        Route::post('/register', 'store');
+        Route::get('/{id}','read');
+        Route::get('/','all');
+        Route::put('/{id}','update');
+        Route::delete('/{id}','delete');
 });
 
 
@@ -43,11 +43,11 @@ Route::prefix('product')
     ->controller(ProductController::class)
     ->middleware('auth:api')
     ->group(function () {
-        Route::post('register', 'store');
-        Route::get('{id}','read');
-        Route::get('all','all');
-        Route::put('{id}','update');
-        Route::delete('{id}','delete');
+        Route::post('/register', 'store');
+        Route::get('/{id}','read');
+        Route::get('/all','all');
+        Route::put('/{id}','update');
+        Route::delete('/{id}','delete');
 });
 
 
@@ -56,19 +56,20 @@ Route::prefix('order')
     ->controller(OrderController::class)
     ->middleware('auth:api')
     ->group(function () {
-        Route::post('register', 'store');
-        Route::get('{id}','read');
-        Route::get('all','all');
-        Route::put('{id}','update');
-        Route::delete('{id}','delete');
+        Route::post('/register', 'store');
+        Route::get('/{id}','read');
+        Route::get('/all','all');
+        Route::put('/{id}','update');
+        Route::put('/{id}/cancel','cancel');
+        Route::put('/{id}/paid','paid');
 });
 
 Route::prefix('discount')
     ->controller(OrderController::class)
     ->middleware('auth:api')
     ->group(function () {
-        Route::post('register', 'store');
-        Route::get('{id}','read');
-        Route::put('{id}','update');
-        Route::delete('{id}','delete');
+        Route::post('/register', 'store');
+        Route::get('/{id}','read');
+        Route::put('/{id}','update');
+        Route::delete('/{id}','delete');
     });

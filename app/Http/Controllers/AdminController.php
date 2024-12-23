@@ -13,10 +13,10 @@ class AdminController extends Controller
     public function __construct()
     {
         // Protege todas as rotas, exceto o login e registro
-        $this->middleware('auth:api', ['except' => ['login', 'store']]);
+        $this->middleware('auth:api', ['except' => ['login', 'register']]);
     }
 
-    public function store(AdminFormRequest $request){
+    public function register(AdminFormRequest $request){
         $request['password'] = bcrypt($request['password']); // Encripta a senha
 
         $admin = Admin::create($request->all());

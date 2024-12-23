@@ -16,9 +16,8 @@ class OrderController extends Controller
     //Aqui é onde vai ficar toda a logica de pedido.
     public function store(OrderFormRequest $request)
     {
-
         $user = JWTAuth::user();
-        // $admin = ;
+
         // Validar estoque dos produtos
         $products = $request['products'];
         $totalPrice = 0;
@@ -53,13 +52,14 @@ class OrderController extends Controller
         } else {
             $totalPrice -= ($totalPrice * $discount->discount)/100;
         }
-        
+
         try {
             // Criar o pedido
             $order = Order::create([
                 'delivery_address' => $request['delivery_address'],
                 'total_price' => round($totalPrice, 2),
-                'status' => 'pending',
+                'status' => Order::STATUS_PENDING,
+                'discount'=> $discount->discount,
                 'user_id'=> $user->id,
             ]);
 
@@ -72,8 +72,9 @@ class OrderController extends Controller
                     'order_id' => $order->id,
                     'product_id' => $product['id'],
                     'quantity' => $product['quantity'],
+                    'unity_price' => $productDetails->price,
                 ]);
-
+                
                 // Atualizar o estoque do produto
                 $productDetails->decrement('stock', $product['quantity']);
             }
@@ -93,45 +94,43 @@ class OrderController extends Controller
         $order = Order::all();
         return $order;
     }
+
+    //Necessita de revisão.
     public function update(OrderFormRequest $request, $id){
 
         $totalPrice = 0;
-
         $order = Order::find($id);
-        if(!$order) {
 
+        //Verifica se o pedido existe.
+        if(!$order) {
             return response()->json(['message'=>'Pedido não existe', 404]);
-        
         }
 
-        if (isset($request['products'])) {
+        //Não há necessidade de verficar se existe produtos, pois se o pedido existe ele vai ter produtos
+        //por causa da validação do formrequest no momento de ser criado.
+        $products = $request['products'];
 
-            $products = $request['products'];
-            
-            // Verificar se os produtos possuem estoque suficiente
-            foreach ($products as $product) {
-
-                $productDetails = Product::find($product['id']);
-                if ($productDetails && $productDetails->stock < $product['quantity']) {
-                    
-                    return response()->json([
-                        'message' => 'Estoque insuficiente para o produto ID: ' . $product['id'],
-                        'available_stock' => $productDetails->stock,
-                    ], 400);
-                
-                }
-                // Calcular o preço total (somar ao valor já existente)
-                $totalPrice += $productDetails->price * $product['quantity'];
+        // Verificar se os produtos possuem estoque suficiente
+        foreach ($products as $product) {
+            $productDetails = Product::find($product['id']);
+            if ($productDetails && $productDetails->stock < $product['quantity']) {
+                return response()->json([
+                    'message' => 'Estoque insuficiente para o produto ID: ' . $product['id'],
+                    'available_stock' => $productDetails->stock,
+                ], 400);
             }
 
-            // Atualizar a tabela intermediária `order_products`
-            // Remover os produtos antigos
-            $order->products()->detach();
+            // Calcular o preço total (somar ao valor já existente)
+            $totalPrice += $productDetails->price * $product['quantity'];
+        }
 
-            // Adicionar os novos produtos ao pedido
-            foreach ($products as $product) {
-                $order->products()->attach($product['id'], ['quantity' => $product['quantity']]);
-            }
+        // Atualizar a tabela intermediária `order_products`
+        // Remover os produtos antigos
+        $order->products()->detach();
+
+        // Adicionar os novos produtos ao pedido
+        foreach ($products as $product) {
+            $order->products()->attach($product['id'], ['quantity' => $product['quantity']]);
         }
 
         //Acessar tabela desconto e pega o valor para aplicar.
@@ -150,53 +149,41 @@ class OrderController extends Controller
         return response()->json($order);
     }
 
-    //Mudar para apenas trocar status para cancelado.
-    public function delete(Request $request, $id){
+    public function cancel(Request $request, $id){
 
-        //Conferir se existe o pedido que queremos deletar
-        if(!Order::find($id)){
+        $order = Order::find($id);
+        
+        //Verifica se o pedido existe.
+        if(!$order) {
             return response()->json(['message'=> 'Pedido nao existe.',404]);
         }
-
-        $orderProducts = OrderProduct::where('order_id', $id)->get();
-
-        // Retornar o estoque de cada item para o estoque do produto
-        foreach ($orderProducts as $orderProduct) {
-            $product = Product::find($orderProduct->product_id);
-
-            // Atualizar o estoque do produto
-            if ($product) {
-                $product->stock += $orderProduct->quantity;
-                $product->save();
-            }
+        
+        //Verifica se o status do pedido pode ser alterado.
+        if($order->status != Order::STATUS_PENDING) {
+            return response()->json(['message'=> 'Pedido já pago/cancelado.',304]);
         }
 
-        //Após conferido
-        //temos de deletar todos os itens adiconado a tabela order_products
-        //que tenham o id do pedido a ser excluido/cancelado.
-        OrderProduct::where('order_id', $id)->delete();
-
-        //Após feita a exclusão, podemos deletar o pedido que desejamos.
-        Order::find($id)->delete();
-
-        return response()->json(['message'=> 'Pedido cancelado com sucesso'], 200);
+        //Altera o status do pedido para cancelado.
+        $order->setStatusCanceled();
+        return response()->json(['message'=> 'Pedido cancelado com sucesso.',200]);
     }
 
     public function paid(Request $request, $id){
 
         $order = Order::find($id);
 
+        //Verifica se o pedido existe.
         if(!$order) {
             return response()->json(['message'=> 'Pedido nao existe.',404]);
         }
         
-        if($order->status == Order::STATUS_PAID) {
-            return response()->json(['message'=> 'Pedido já pago.',304]);
+        //Verifica se o status do pedido pode ser alterado.
+        if($order->status != Order::STATUS_PENDING) {
+            return response()->json(['message'=> 'Pedido já pago/cancelado.',304]);
         }
 
+        //Altera o status do pedido para pago.
         $order->setStatusPaid();
-
         return response()->json(['message'=> 'Pedido pago com sucesso.',200]);
-
     }
 }

@@ -52,7 +52,7 @@ return [
         ],
         'api' => [
             'driver' => 'jwt',
-            'provider' => 'admins',
+            'provider' => 'users',
         ],
     ],
 
@@ -76,13 +76,13 @@ return [
     'providers' => [
         'users' => [
             'driver' => 'eloquent',
-            'model' => App\Models\User::class,
+            'model' => App\Models\Admin::class,
             // 'model' => env('AUTH_MODEL', App\Models\User::class),
         ],
-        'admins' => [ // Provider específico para administradores
-            'driver' => 'eloquent',
-            'model' => App\Models\Admin::class,
-        ],
+        // 'admins' => [ // Provider específico para administradores
+        //     'driver' => 'eloquent',
+        //     'model' => App\Models\Admin::class,
+        // ],
 
         // 'users' => [
         //     'driver' => 'database',

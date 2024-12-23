@@ -30,6 +30,16 @@ class Order extends Model
         return $this->belongsTo(Client::class);
     }   
 
+    public function client()
+    {
+        return $this->belongsTo(Client::class);
+    }
+
+    public function setStatusPending(){
+        $this->status = $this::STATUS_PENDING;
+        $this->save();
+    }
+    
     public function setStatusPaid(){
          $this->status = $this::STATUS_PAID;
          $this->save();
