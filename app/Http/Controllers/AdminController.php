@@ -16,7 +16,7 @@ class AdminController extends Controller
         $this->middleware('auth:api', ['except' => ['login', 'register']]);
     }
 
-    public function register(AdminFormRequest $request){
+    public function register(Request $request){
         $request['password'] = bcrypt($request['password']); // Encripta a senha
 
         $admin = Admin::create($request->all());
@@ -30,7 +30,7 @@ class AdminController extends Controller
         ], 201);
     }
 
-    public function login(AdminFormRequest $request){
+    public function login(Request $request){
         $credentials = $request->only('email', 'password');
 
         try {

@@ -5,7 +5,6 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\DiscountController;
-use App\Models\Admin;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -65,7 +64,7 @@ Route::prefix('order')
 });
 
 Route::prefix('discount')
-    ->controller(OrderController::class)
+    ->controller(DiscountController::class)
     ->middleware('auth:api')
     ->group(function () {
         Route::post('/register', 'store');

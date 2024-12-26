@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('discounts', function (Blueprint $table) {
             $table->id();
-            $table->float('price');
-            $table->float('discount');
+            $table->decimal('price', 10, 2);
+            $table->decimal('discount', 10, 2);
         });
     }
 
