@@ -5,17 +5,11 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ClientFormRequest;
 use App\Models\Client;
 use Illuminate\Http\Request;
-use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 
 //Logica do Usuario. falta o JWT
 class ClientController extends Controller
 {
-    public function __construct()
-    {
-        // Protege todas as rotas, exceto o login e registro
-        $this->middleware('auth:api', ['except' => ['login', 'insert']]);
-    }
     public function store(ClientFormRequest $request){
         try{
             $user = Client::create($request->all());

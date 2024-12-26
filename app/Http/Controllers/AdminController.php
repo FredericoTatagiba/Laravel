@@ -30,58 +30,7 @@ class AdminController extends Controller
         ], 201);
     }
 
-    public function update(AdminFormRequest $request){
-        $admin = Admin::findOrFail($request->id);
-        if($admin->update($request->all())){
-            return response()->json([
-                'message' => 'Administrador atualizado com sucesso',
-                'user' => $admin,
-            ]);
-        }else{
-            return response()->json([
-                'message' => 'Falha ao atualizar administrador',
-                'user' => $admin,
-            ]);
-        }
-    }
-
-    public function delete(Admin $admin){ 
-        if($admin->delete()){
-            return response()->json([
-                'message' => 'Administrador deletado com sucesso',
-            ]);
-        }else{
-            return response()->json([
-                'message' => 'Falha ao deletar administrador',
-            ]);
-        }
-    }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    public function login(Request $request)
-    {
+    public function login(AdminFormRequest $request){
         $credentials = $request->only('email', 'password');
 
         try {
@@ -93,6 +42,17 @@ class AdminController extends Controller
         }
 
         return $this->respondWithToken($token);
+    }
+
+    public function logout()
+    {
+        try {
+            // Invalida o token
+            JWTAuth::invalidate();
+            return response()->json(['message' => 'Logout realizado com sucesso']);
+        } catch (JWTException $e) {
+            return response()->json(['error' => 'Não foi possível realizar o logout'], 500);
+        }
     }
 
     public function respondWithToken($token)
@@ -107,18 +67,42 @@ class AdminController extends Controller
         ]);
     }
 
-    public function logout()
-    {
-        try {
-            // Pega o token atual do usuário
-            $token = JWTAuth::getToken();
+    public function read($id){
+        $admin = Admin::find($id);
+        if(!$admin) {
+            return response()->json(['message'=>'Administrador não encontrado'], 404);
+        }
+        return response()->json($admin);
+    }
 
-            // Invalida o token
-            JWTAuth::invalidate($token);
+    public function all(){
+        return Admin::get();
+    }
 
-            return response()->json(['message' => 'Logout realizado com sucesso']);
-        } catch (JWTException $e) {
-            return response()->json(['error' => 'Não foi possível realizar o logout'], 500);
+    public function update(AdminFormRequest $request){
+        $admin = Admin::findOrFail($request->id);
+        if($admin->update($request->all())){
+            return response()->json([
+                'message' => 'Administrador atualizado com sucesso',
+                'user' => $admin,
+            ]);
+        }else{
+            return response()->json([
+                'message' => 'Falha ao atualizar administrador',
+                'user' => $admin,
+            ]);
+        }
+    }
+    public function destroy(AdminFormRequest $request){
+        $admin = Admin::findOrFail($request->id);
+        if($admin->delete()){
+            return response()->json([
+                'message' => 'Administrador deletado com sucesso',
+            ]);
+        }else{
+            return response()->json([
+                'message' => 'Falha ao deletar administrador',
+            ]);
         }
     }
 

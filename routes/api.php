@@ -22,7 +22,7 @@ Route::prefix('admin')
         Route::get('/{id}','read');
         Route::get('/all','all');
         Route::put('/{id}','update');
-        Route::delete('/{id}','delete');
+        Route::delete('/{id}','destroy');
 });
 
 //Rotas Usuário (Protegidas com JWT)
