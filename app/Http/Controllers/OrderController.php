@@ -85,12 +85,12 @@ class OrderController extends Controller
         }
     }
 
-    public function read(Request $request, $id){
+    public function read($id){
         $order = Order::find($id);
         if(!$order){return response()->json(['message'=>'Pedido não encontrado', 404]);}
         return response()->json($order);
     }
-    public function all(Request $request){
+    public function all(){
         $order = Order::all();
         return $order;
     }

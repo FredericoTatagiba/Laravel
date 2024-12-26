@@ -12,26 +12,25 @@ Route::get('/', function () {
 });
 
 //Rotas Administrador
-//Em tese a rota fica assim /admin/register
 Route::prefix('admin')
     ->controller(AdminController::class)
     ->group(function () {
         Route::post('/register', 'register');
         Route::post('/login','login')->name('login');
-        Route::get('/{id}','read');
+        Route::get('/{id}/show','read');
         Route::get('/all','all');
-        Route::put('/{id}','update');
+        Route::put('/{id}/update','update');
         Route::delete('/{id}','destroy');
 });
 
-//Rotas Usuário (Protegidas com JWT)
+//Rotas Cliente (Protegidas com JWT)
 Route::prefix('client')
     ->controller(ClientController::class)
     ->middleware('auth:api')
     ->group(function () {
         Route::post('/register', 'store');
         Route::get('/{id}','read');
-        Route::get('/','all');
+        Route::get('/all','all');
         Route::put('/{id}','update');
         Route::delete('/{id}','delete');
 });
@@ -42,7 +41,7 @@ Route::prefix('product')
     ->controller(ProductController::class)
     ->middleware('auth:api')
     ->group(function () {
-        Route::post('/register', 'store');
+        Route::post('/register', 'register');
         Route::get('/{id}','read');
         Route::get('/all','all');
         Route::put('/{id}','update');
@@ -55,10 +54,10 @@ Route::prefix('order')
     ->controller(OrderController::class)
     ->middleware('auth:api')
     ->group(function () {
-        Route::post('/register', 'store');
+        Route::post('/make', 'store');
         Route::get('/{id}','read');
         Route::get('/all','all');
-        Route::put('/{id}','update');
+        Route::put('/{id}/update','update');
         Route::put('/{id}/cancel','cancel');
         Route::put('/{id}/paid','paid');
 });
@@ -68,7 +67,7 @@ Route::prefix('discount')
     ->middleware('auth:api')
     ->group(function () {
         Route::post('/register', 'store');
-        Route::get('/{id}','read');
+        Route::get('/{id}','show');
         Route::put('/{id}','update');
         Route::delete('/{id}','delete');
     });

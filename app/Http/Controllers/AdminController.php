@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\AdminFormRequest;
+use App\Http\Requests\AdminUpdateRequest;
 use App\Models\Admin;
 use Illuminate\Http\Request;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -45,6 +46,39 @@ class AdminController extends Controller
         return $this->respondWithToken($token);
     }
 
+    public function update(AdminUpdateRequest $request, $id){
+        $admin = Admin::findOrFail($id);
+        
+        if($request->password){
+            $request['password'] = bcrypt($request['password']);
+        }
+
+        if($admin->update($request->all())){
+            return response()->json([
+                'message' => 'Administrador atualizado com sucesso',
+                'admin' => $admin,
+            ]);
+        } else{
+            return response()->json([
+                'message' => 'Falha ao atualizar administrador',
+                'admin' => $admin,
+            ]);
+        }
+    }
+
+    public function destroy(AdminFormRequest $request){
+        $admin = Admin::findOrFail($request->id);
+        if($admin->delete()){
+            return response()->json([
+                'message' => 'Administrador deletado com sucesso',
+            ]);
+        }else{
+            return response()->json([
+                'message' => 'Falha ao deletar administrador',
+            ]);
+        }
+    }
+
     public function logout()
     {
         try {
@@ -64,7 +98,7 @@ class AdminController extends Controller
         return response()->json([
             'access_token' => $token,
             'token_type' => 'bearer',
-            'expires_in' => $ttl * 60, // Multiplicando por 60 para converter em segundos
+            'expires_in' => $ttl * 600000, // Multiplicando por 60 para converter em segundos
         ]);
     }
 
@@ -76,35 +110,10 @@ class AdminController extends Controller
         return response()->json($admin);
     }
 
+   
     public function all(){
-        return Admin::get();
-    }
-
-    public function update(AdminFormRequest $request){
-        $admin = Admin::findOrFail($request->id);
-        if($admin->update($request->all())){
-            return response()->json([
-                'message' => 'Administrador atualizado com sucesso',
-                'user' => $admin,
-            ]);
-        }else{
-            return response()->json([
-                'message' => 'Falha ao atualizar administrador',
-                'user' => $admin,
-            ]);
-        }
-    }
-    public function destroy(AdminFormRequest $request){
-        $admin = Admin::findOrFail($request->id);
-        if($admin->delete()){
-            return response()->json([
-                'message' => 'Administrador deletado com sucesso',
-            ]);
-        }else{
-            return response()->json([
-                'message' => 'Falha ao deletar administrador',
-            ]);
-        }
+        $admins = Admin::all();
+        return response()->json($admins);
     }
 
     public function refresh()

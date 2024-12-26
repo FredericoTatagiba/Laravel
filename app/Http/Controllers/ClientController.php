@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ClientFormRequest;
+use App\Http\Requests\ClientUpdateRequest;
 use App\Models\Client;
 use Illuminate\Http\Request;
 use Tymon\JWTAuth\Exceptions\JWTException;
@@ -25,35 +26,26 @@ class ClientController extends Controller
         }
     }
 
-    public function read(Request $request, $id){
+    public function read($id){
 
         $user = Client::find($id);
         
         if(!$user) {
             return response()->json(['message'=>'Usuario não encontrado', 404]);
         }
-
         return response()->json($user);
     }
 
-    public function all(Request $request){
-        // $user = new Client();
-        // $user= $user->all();
-
-        return Client::get();
+    public function all(){
+        $clients = Client::all();
+        return $clients;
     }
 
-    public function update(Request $request, $id)
+    public function update(ClientUpdateRequest $request, $id)
     {
-        $validated = $request->validate([
-            'name' => 'nullable|string|max:255',
-            'cpf'=> 'nullable|string|digits:11',
-            'email' => 'nullable|email|unique:users,email,' . $id,
-        ]);
-
         $user = Client::findOrFail($id);
 
-        $user->update($validated);
+        $user->update($request->all());
 
         return response()->json([
             'message' => 'Usuario atualizado com sucesso.',
@@ -61,7 +53,7 @@ class ClientController extends Controller
         ]);
     }
 
-    public function delete(Request $request, $id){
+    public function delete($id){
         Client::find($id)->delete();
         return response()->json(['message'=> 'Usuario deletado com sucesso'], 200);
     }

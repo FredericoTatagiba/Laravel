@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\DiscountFormRequest;
+use App\Http\Requests\DiscountUpdateRequest;
 use Illuminate\Http\Request;
 use App\Models\Discount;
 
@@ -13,7 +15,7 @@ class DiscountController extends Controller
         return Discount::all();
     }
     
-    public function store(Request $request){
+    public function store(DiscountFormRequest $request){
         try{
             $discount = Discount::create($request->all());
             return response()->json(['message'=>'Desconto criado com sucesso'],200);
@@ -22,7 +24,7 @@ class DiscountController extends Controller
         }
     }
 
-    public function show(Request $request, $id){
+    public function show($id){
 
         try{
             $discount = Discount::find($id);
@@ -36,7 +38,7 @@ class DiscountController extends Controller
         }
     }
 
-    public function update(Request $request, $id){
+    public function update(DiscountUpdateRequest $request, $id){
         try{
             $discount = Discount::find($id);
             if(!$discount) {
@@ -50,7 +52,7 @@ class DiscountController extends Controller
         }    
     }
 
-    public function delete(Request $request, $id){
+    public function delete($id){
         try{
             $discount = Discount::find($id);
             if(!$discount) {
