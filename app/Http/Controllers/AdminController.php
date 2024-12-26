@@ -16,7 +16,8 @@ class AdminController extends Controller
         $this->middleware('auth:api', ['except' => ['login', 'register']]);
     }
 
-    public function register(Request $request){
+    public function register(AdminFormRequest $request){
+        
         $request['password'] = bcrypt($request['password']); // Encripta a senha
 
         $admin = Admin::create($request->all());
