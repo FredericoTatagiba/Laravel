@@ -10,15 +10,11 @@ use App\Models\Discount;
 class DiscountController extends Controller
 {
     //Criar o CRUD para descontos. Pode ter delete.
-
-    public function index(){
-        return Discount::all();
-    }
     
     public function store(DiscountFormRequest $request){
         try{
             $discount = Discount::create($request->all());
-            return response()->json(['message'=>'Desconto criado com sucesso'],200);
+            return response()->json(['message'=>'Desconto criado com sucesso', 'discount'=>$discount],200);
         }catch(\Exception $e){
             return response()->json(['message'=> 'Falha ao criar desconto'],500);
         }
@@ -59,7 +55,7 @@ class DiscountController extends Controller
                 return response()->json(['message'=>'Desconto não existe', 404]);
             }
             $discount->delete();
-            return response()->json(['message'=> 'Desconto apagado com sucesso', 200]);
+            return response()->json(['message'=> 'Desconto apagado com sucesso', 'discount'=>$discount],200);
 
         } catch(\Exception $e) {
             return response()->json(['message'=> 'Falha ao apagar desconto'],500);

@@ -19,8 +19,8 @@ Route::prefix('admin')
         Route::post('/login','login')->name('login');
         Route::get('/{id}/show','read');
         Route::get('/all','all');
-        Route::put('/{id}/update','update');
-        Route::delete('/{id}','destroy');
+        Route::put('/{id}','update');
+        Route::delete( '/{id}','delete');
 });
 
 //Rotas Cliente (Protegidas com JWT)

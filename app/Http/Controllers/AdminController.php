@@ -66,8 +66,8 @@ class AdminController extends Controller
         }
     }
 
-    public function destroy(AdminFormRequest $request){
-        $admin = Admin::findOrFail($request->id);
+    public function delete($id){
+        $admin = Admin::findOrFail($id);
         if($admin->delete()){
             return response()->json([
                 'message' => 'Administrador deletado com sucesso',
