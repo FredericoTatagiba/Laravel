@@ -103,7 +103,7 @@ class OrderController extends Controller
 
         //Verifica se o pedido existe.
         if(!$order) {
-            return response()->json(['message'=>'Pedido não existe', 404]);
+            return response()->json(['message'=>'Pedido não existe',], 404);
         }
 
         //Não há necessidade de verficar se existe produtos, pois se o pedido existe ele vai ter produtos

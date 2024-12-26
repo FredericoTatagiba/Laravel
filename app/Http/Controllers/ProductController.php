@@ -12,7 +12,10 @@ class ProductController extends Controller
     public function register(ProductFormRequest $request){
         try{
             $product = Product::create($request->all());
-            return response()->json(['message'=>'Produto criado com sucesso', 'product' => $product],200);
+            return response()->json([
+                'message'=>'Produto criado com sucesso',
+                'product' => $product,
+            ],200);
         }catch(\Exception $e){
             return response()->json(['message'=> 'Falha ao criar produto'],500);
         }
@@ -26,11 +29,7 @@ class ProductController extends Controller
         return response()->json($product);
     }
 
-    public function all($filter){
-        if($filter){
-            $product = Product::where(column: $filter)->get();
-            return $product;
-        }
+    public function all(){
         $product = Product::all();
         return $product;
     }
@@ -39,18 +38,23 @@ class ProductController extends Controller
         try{
             $product = Product::find($id);
             if(!$product) {
-                return response()->json(['message'=>'Produto não existe', 404]);
+                return response()->json(['message'=>'Produto não existe',], 404);
             }
             $product->update($request->all());
-            return response()->json($product);
+            return response()->json([
+                'message'=> 'Produto atualizado com sucesso',
+                'product' => $product], 200);
 
         } catch(\Exception $e) {
             return response()->json(['message'=> 'Falha ao atualizar produto'],500);
         }    
     }
 
-    public function delete(Request $request, $id){
+    public function delete($id){
         $product = Product::find($id)->delete();
-        return response()->json(['message'=> 'Produto apagado com sucesso', 'product' => $product], 200);
+        return response()->json([
+            'message'=> 'Produto apagado com sucesso', 
+            'product' => $product
+        ], 200);
     }
 }

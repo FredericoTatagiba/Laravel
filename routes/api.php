@@ -42,7 +42,7 @@ Route::prefix('product')
     ->middleware('auth:api')
     ->group(function () {
         Route::post('/register', 'register');
-        Route::get('/{id}','read');
+        Route::get('/{id}/show','read');
         Route::get('/all','all');
         Route::put('/{id}','update');
         Route::delete('/{id}','delete');

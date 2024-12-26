@@ -71,6 +71,7 @@ class AdminController extends Controller
         if($admin->delete()){
             return response()->json([
                 'message' => 'Administrador deletado com sucesso',
+                'admin'=> $admin,
             ]);
         }else{
             return response()->json([

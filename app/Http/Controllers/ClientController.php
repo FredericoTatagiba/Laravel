@@ -43,19 +43,22 @@ class ClientController extends Controller
 
     public function update(ClientUpdateRequest $request, $id)
     {
-        $user = Client::findOrFail($id);
+        $client = Client::findOrFail($id);
 
-        $user->update($request->all());
+        $client->update($request->all());
 
         return response()->json([
             'message' => 'Usuario atualizado com sucesso.',
-            'user' => $user,
+            'client' => $client,
         ]);
     }
 
     public function delete($id){
-        Client::find($id)->delete();
-        return response()->json(['message'=> 'Usuario deletado com sucesso'], 200);
+        $client = Client::find($id)->delete();
+        return response()->json([
+            'message'=> 'Usuario deletado com sucesso',
+            'client'=> $client,
+        ], 200);
     }
 
 }
