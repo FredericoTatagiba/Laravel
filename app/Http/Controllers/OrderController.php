@@ -133,60 +133,103 @@ class OrderController extends Controller
     }
 
     //Necessita de revisão.
-    public function update(OrderUpdateRequest $request, $id){
-
-        $totalPrice = 0;
-        $order = Order::find($id);
-
-        //Verifica se o pedido existe.
-        if(!$order) {
-            return response()->json(['message'=>'Pedido não existe',], 404);
-        }
-
-        //Não há necessidade de verficar se existe produtos, pois se o pedido existe ele vai ter produtos
-        //por causa da validação do formrequest no momento de ser criado.
-        $products = $request['products'];
-
-        // Verificar se os produtos possuem estoque suficiente
-        foreach ($products as $product) {
-            $productDetails = Product::find($product['id']);
-            if ($productDetails && $productDetails->stock < $product['quantity']) {
-                return response()->json([
-                    'message' => 'Estoque insuficiente para o produto ID: ' . $product['id'],
-                    'available_stock' => $productDetails->stock,
-                ], 400);
+    public function update(Request $request, $id)
+    {
+        try {
+            // Encontrar o pedido
+            $order = Order::find($id);
+            if (!$order) {
+                return response()->json(['message' => 'Pedido não encontrado.'], 404);
             }
 
-            // Calcular o preço total (somar ao valor já existente)
-            $totalPrice += $productDetails->price * $product['quantity'];
+            // Validar dados de entrada
+            $validated = $request->validate([
+                'products' => 'required|array|min:1',
+                'products.*.id' => 'required|exists:products,id',
+                'products.*.quantity' => 'required|integer|min:1',
+            ]);
+
+            $products = $validated['products'];
+            $totalPrice = 0;
+
+            // Obter todos os produtos de uma vez, para evitar múltiplas consultas
+            $productIds = array_column($products, 'id');
+            $productDetails = Product::whereIn('id', $productIds)->get()->keyBy('id');
+
+            // Validar estoque e calcular o preço total
+            foreach ($products as $product) {
+                $productDetail = $productDetails->get($product['id']);
+
+                if (!$productDetail) {
+                    return response()->json([
+                        'message' => 'Produto não encontrado com ID: ' . $product['id'],
+                    ], 400);
+                }
+
+                // Verificar se o estoque é suficiente
+                if ($productDetail->stock < $product['quantity']) {
+                    return response()->json([
+                        'message' => 'Estoque insuficiente para o produto ID: ' . $product['id'],
+                        'available_stock' => $productDetail->stock,
+                    ], 400);
+                }
+
+                // Calcular o preço total
+                $totalPrice += $productDetail->price * $product['quantity'];
+            }
+
+            // Acessar a tabela de desconto e aplicar
+            $discount = Discount::orderBy('price', 'desc')
+                ->where('price', '<', $totalPrice)
+                ->first();
+
+            if ($discount) {
+                $totalPrice -= ($totalPrice * $discount->discount) / 100;
+            }
+
+            // Atualizar a tabela intermediária `order_products`
+            try {
+                // Remover os produtos antigos
+                $order->products()->detach();
+
+                // Associar os novos produtos ao pedido
+                foreach ($products as $product) {
+                    $order->products()->attach($product['id'], [
+                        'quantity' => $product['quantity'],
+                        'unity_price' => $productDetails[$product['id']]->price,
+                    ]);
+                }
+            } catch (\Exception $e) {
+                return response()->json([
+                    'message' => 'Erro ao atualizar os produtos do pedido: ' . $e->getMessage(),
+                ], 500);
+            }
+
+            // Atualizar o pedido com o novo total
+            try {
+                $order->update([
+                    'total_price' => round($totalPrice, 2),
+                    'discount' => $discount ? $discount->discount : 0,
+                ]);
+            } catch (\Exception $e) {
+                return response()->json([
+                    'message' => 'Erro ao atualizar o pedido: ' . $e->getMessage(),
+                ], 500);
+            }
+
+            return response()->json([
+                'message' => 'Pedido atualizado com sucesso.',
+                'order' => $order->load('products'),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Erro ao processar a atualização do pedido: ' . $e->getMessage(),
+            ], 500);
         }
-
-        // Atualizar a tabela intermediária `order_products`
-        // Remover os produtos antigos
-        $order->products()->detach();
-
-        // Adicionar os novos produtos ao pedido
-        foreach ($products as $product) {
-            $order->products()->attach($product['id'], ['quantity' => $product['quantity']]);
-        }
-
-        //Acessar tabela desconto e pega o valor para aplicar.
-        $discount = Discount::orderBy('price', 'desc')
-            ->where('price', '<', $totalPrice)->first();
-        if(!$discount) {
-            $discount = 0;
-        } else {
-            $totalPrice -= ($totalPrice * $discount->discount)/100;
-        }
-
-        // Atualizar o preço total do pedido
-        $request['total_price'] = $totalPrice;
-
-        $order->update($request);
-        return response()->json($order);
     }
 
-    public function cancel(Request $request, $id){
+
+    public function cancel($id){
 
         $order = Order::find($id);
         
@@ -205,7 +248,7 @@ class OrderController extends Controller
         return response()->json(['message'=> 'Pedido cancelado com sucesso.',200]);
     }
 
-    public function paid(Request $request, $id){
+    public function paid($id){
 
         $order = Order::find($id);
 
