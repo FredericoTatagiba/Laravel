@@ -3,92 +3,104 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\OrderFormRequest;
+use App\Http\Requests\OrderUpdateRequest;
 use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\Product;
 use App\Models\Discount;
-use Tymon\JWTAuth\Facades\JWTAuth;
+use App\Models\Client;
 
 use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
     //Aqui é onde vai ficar toda a logica de pedido.
-    public function store(OrderFormRequest $request)
+    public function store(Request $request)
     {
-        $user = JWTAuth::user();
+        
+        // Verificar se o cliente existe na tabela de clients
+        
 
         // Validar estoque dos produtos
         $products = $request['products'];
         $totalPrice = 0;
 
+        // Obter todos os produtos de uma vez, para evitar múltiplas consultas
+        $productIds = array_column($products, 'id');
+        $productDetails = Product::whereIn('id', $productIds)->get()->keyBy('id');
+
         foreach ($products as $product) {
-            $productDetails = Product::find($product['id']);
-            // Verificação de produto não encontrado
-            if (!$productDetails) {
+            if (!isset($productDetails[$product['id']])) {
                 return response()->json([
                     'message' => 'Produto não encontrado com ID: ' . $product['id'],
                     'available_stock' => 0,
                 ], 400);
             }
 
+            $productDetail = $productDetails[$product['id']];
+
             // Verificação de estoque insuficiente
-            if ($productDetails->stock < $product['quantity']) {
+            if ($productDetail->stock < $product['quantity']) {
                 return response()->json([
-                    'message' => 'Estoque insuficiente para o produto ID: ' . $product['id'] . ' Stock: ' . $productDetails->stock,
-                    'available_stock' => $productDetails->stock,
+                    'message' => 'Estoque insuficiente para o produto ID: ' . $product['id'] . '. Stock: ' . $productDetail->stock,
+                    'available_stock' => $productDetail->stock,
                 ], 400);
             }
 
             // Calcular preço total
-            $totalPrice += $productDetails->price * $product['quantity'];
+            $totalPrice += $productDetail->price * $product['quantity'];
         }
-        
+
         // Acessar tabela desconto e pegar o valor para aplicar.
         $discount = Discount::orderBy('price', 'desc')
             ->where('price', '<', $totalPrice)->first();
 
-        if(!$discount) {
-            $discount = new Discount();
-            $discount->discount = 0;
-        } else {
-            $totalPrice -= ($totalPrice * $discount->discount)/100;
+        if ($discount) {
+            $totalPrice -= ($totalPrice * $discount->discount) / 100;
         }
 
         try {
             // Criar o pedido
             $order = Order::create([
-                'delivery_address' => $request['delivery_address'],
-                'total_price' => round($totalPrice, 2),
+                'client_id' => $request->client_id, // Aqui é o cliente do sistema, e não o usuário autenticado
+                'delivery_address' => $request->delivery_address,
+                'total_price' => round($totalPrice,2),
+                'discount' => $discount ? $discount->discount : 0,
                 'status' => Order::STATUS_PENDING,
-                'discount'=> $discount->discount,
-                'user_id'=> $user->id,
             ]);
 
-            
-
+            $orderProducts = [];
             // Adicionar produtos ao pedido
             foreach ($products as $product) {
-                $productDetails = Product::find($product['id']);
+                $productDetail = $productDetails[$product['id']];
 
                 // Inserir na tabela intermediária
-                OrderProduct::create([
+                $orderProduct = OrderProduct::create([
                     'order_id' => $order->id,
                     'product_id' => $product['id'],
                     'quantity' => $product['quantity'],
-                    'unity_price' => $productDetails->price,
+                    'unity_price' => $productDetail->price,
                 ]);
-                
 
                 // Atualizar o estoque do produto
-                $productDetails->decrement('stock', $product['quantity']);
+                $productDetail->decrement('stock', $product['quantity']);
+
+                //Apenas para visualização
+                $orderProducts[] = [
+                    'id' => $orderProduct->id,
+                    'product_id' => $product['id'],
+                    'quantity' => $product['quantity'],
+                    'unity_price' => $productDetail->price,
+                ];
             }
 
-            return response()->json(['message' => 'Pedido criado com sucesso', 'order_id' => $order->id], 201);
+            return response()->json(['message' => 'Pedido criado com sucesso', 'order' => $order, 'order_products' => $orderProducts], 201);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Erro ao criar pedido: ' . $e->getMessage()], 500);
         }
     }
+
+
 
     public function read($id){
         $order = Order::find($id);
@@ -101,7 +113,7 @@ class OrderController extends Controller
     }
 
     //Necessita de revisão.
-    public function update(OrderFormRequest $request, $id){
+    public function update(OrderUpdateRequest $request, $id){
 
         $totalPrice = 0;
         $order = Order::find($id);

@@ -54,7 +54,7 @@ Route::middleware('auth:api')
     Route::prefix('order')
     ->controller(OrderController::class)
     ->group(function () {
-        Route::post('/make', 'store');
+        Route::post('/store', 'store');
         Route::get('/{id}/show','read');
         Route::get('/all','all');
         Route::put('/{id}/update','update');
