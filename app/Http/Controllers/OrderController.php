@@ -17,43 +17,55 @@ class OrderController extends Controller
     //Aqui é onde vai ficar toda a logica de pedido.
     public function store(Request $request)
     {
-        
-        // Verificar se o cliente existe na tabela de clients
-        
+        // Validar a existência do cliente
+        $client = Client::find($request->client_id);
+        if (!$client) {
+            return response()->json(['message' => 'Cliente não encontrado.'], 404);
+        }
 
-        // Validar estoque dos produtos
-        $products = $request['products'];
+        // Validar dados de entrada
+        $validated = $request->validate([
+            'products' => 'required|array|min:1',
+            'products.*.id' => 'required|exists:products,id', // Verificar se o produto existe
+            'products.*.quantity' => 'required|integer|min:1', // Verificar se a quantidade é positiva
+            'delivery_address' => 'required|string|max:255',
+        ]);
+
+        // Obter os produtos do pedido
+        $products = $validated['products'];
         $totalPrice = 0;
 
         // Obter todos os produtos de uma vez, para evitar múltiplas consultas
         $productIds = array_column($products, 'id');
         $productDetails = Product::whereIn('id', $productIds)->get()->keyBy('id');
 
+        // Verificar cada produto
         foreach ($products as $product) {
-            if (!isset($productDetails[$product['id']])) {
+            $productDetail = $productDetails->get($product['id']);
+            
+            if (!$productDetail) {
                 return response()->json([
                     'message' => 'Produto não encontrado com ID: ' . $product['id'],
                     'available_stock' => 0,
                 ], 400);
             }
 
-            $productDetail = $productDetails[$product['id']];
-
             // Verificação de estoque insuficiente
             if ($productDetail->stock < $product['quantity']) {
                 return response()->json([
-                    'message' => 'Estoque insuficiente para o produto ID: ' . $product['id'] . '. Stock: ' . $productDetail->stock,
+                    'message' => 'Estoque insuficiente para o produto ID: ' . $product['id'] . '. Estoque disponível: ' . $productDetail->stock,
                     'available_stock' => $productDetail->stock,
                 ], 400);
             }
 
-            // Calcular preço total
+            // Calcular o preço total
             $totalPrice += $productDetail->price * $product['quantity'];
         }
 
-        // Acessar tabela desconto e pegar o valor para aplicar.
+        // Acessar tabela de desconto e aplicar
         $discount = Discount::orderBy('price', 'desc')
-            ->where('price', '<', $totalPrice)->first();
+            ->where('price', '<', $totalPrice)
+            ->first();
 
         if ($discount) {
             $totalPrice -= ($totalPrice * $discount->discount) / 100;
@@ -62,14 +74,15 @@ class OrderController extends Controller
         try {
             // Criar o pedido
             $order = Order::create([
-                'client_id' => $request->client_id, // Aqui é o cliente do sistema, e não o usuário autenticado
+                'client_id' => $client->id,
                 'delivery_address' => $request->delivery_address,
-                'total_price' => round($totalPrice,2),
+                'total_price' => round($totalPrice, 2),
                 'discount' => $discount ? $discount->discount : 0,
                 'status' => Order::STATUS_PENDING,
             ]);
 
             $orderProducts = [];
+
             // Adicionar produtos ao pedido
             foreach ($products as $product) {
                 $productDetail = $productDetails[$product['id']];
@@ -85,7 +98,7 @@ class OrderController extends Controller
                 // Atualizar o estoque do produto
                 $productDetail->decrement('stock', $product['quantity']);
 
-                //Apenas para visualização
+                // Apenas para visualização
                 $orderProducts[] = [
                     'id' => $orderProduct->id,
                     'product_id' => $product['id'],
@@ -94,9 +107,16 @@ class OrderController extends Controller
                 ];
             }
 
-            return response()->json(['message' => 'Pedido criado com sucesso', 'order' => $order, 'order_products' => $orderProducts], 201);
+            return response()->json([
+                'message' => 'Pedido criado com sucesso.',
+                'order' => $order,
+                'order_products' => $orderProducts,
+            ], 201);
+
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Erro ao criar pedido: ' . $e->getMessage()], 500);
+            return response()->json([
+                'message' => 'Erro ao criar pedido: ' . $e->getMessage(),
+            ], 500);
         }
     }
 
