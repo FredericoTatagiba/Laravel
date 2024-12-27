@@ -11,8 +11,8 @@ class OrderUpdateRequest extends FormRequest
         return [
             "delivery_address" => "nullable|string|max:500",
             "products" => "nullable|array", // Lista de produtos
-            "products.*.id" => "nullable|integer|exists:products,id",
-            "products.*.quantity" => "nullable|integer|min:1"
+            "products.*" => [new OrderProductsFormRequest()]
+
         ];
     }
 

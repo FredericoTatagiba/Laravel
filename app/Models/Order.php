@@ -17,12 +17,12 @@ class Order extends Model
     //  ];
 
     protected $fillable = [
-        "delivery_address", "total_price", "status", "discount",
+        "client_id", "delivery_address", "total_price", "status", "discount",
     ];
 
     public function products()
     {
-        return $this->hasMany(Product::class);
+        return $this->belongsToMany(Product::class);
     }
 
     public function user()
