@@ -1,10 +1,10 @@
 <?php
 
-use App\Http\Controllers\ClientController;
-use App\Http\Controllers\AdminController;
-use App\Http\Controllers\ProductController;
-use App\Http\Controllers\OrderController;
-use App\Http\Controllers\DiscountController;
+use App\Http\Controllers\Api\ClientController;
+use App\Http\Controllers\Api\AdminController;
+use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\Api\DiscountController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
