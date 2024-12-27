@@ -43,11 +43,13 @@ class OrderController extends Controller
             // Calcular preço total
             $totalPrice += $productDetails->price * $product['quantity'];
         }
-
-        //Acessar tabela desconto e pegar o valor para aplicar.
+        
+        // Acessar tabela desconto e pegar o valor para aplicar.
         $discount = Discount::orderBy('price', 'desc')
             ->where('price', '<', $totalPrice)->first();
+
         if(!$discount) {
+            $discount = new Discount();
             $discount->discount = 0;
         } else {
             $totalPrice -= ($totalPrice * $discount->discount)/100;
@@ -63,6 +65,8 @@ class OrderController extends Controller
                 'user_id'=> $user->id,
             ]);
 
+            
+
             // Adicionar produtos ao pedido
             foreach ($products as $product) {
                 $productDetails = Product::find($product['id']);
@@ -74,6 +78,7 @@ class OrderController extends Controller
                     'quantity' => $product['quantity'],
                     'unity_price' => $productDetails->price,
                 ]);
+                
 
                 // Atualizar o estoque do produto
                 $productDetails->decrement('stock', $product['quantity']);

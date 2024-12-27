@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+
 class ClientFormRequest extends FormRequest
 {
 
@@ -11,7 +12,7 @@ class ClientFormRequest extends FormRequest
     {
         return [
             'name'=> 'required|string|max:255',
-            'cpf'=> 'required|cpf|digits:11',
+            'cpf'=> 'required|cpf',
             'email' => 'required|email|unique:clients,email,',
         ];
     }
@@ -21,8 +22,6 @@ class ClientFormRequest extends FormRequest
             'name.required' => 'O nome é obrigatório.',
             'name.max' =>'O nome não pode ter mais de :max caracteres',
             'cpf.required' => 'O CPF é obrigatório.',
-            'cpf.cpf'=> 'O CPF é inválido.',
-            'cpf.digits' => 'O CPF deve ter 11 dígitos.',
             'email.required'=> 'O email é obrigatório',
             'email.email'=> 'Insira um email válido',
             'email.unique'=> 'Email já cadastrado'

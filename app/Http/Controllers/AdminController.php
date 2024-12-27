@@ -48,32 +48,44 @@ class AdminController extends Controller
 
     public function update(AdminUpdateRequest $request, $id){
         $admin = Admin::findOrFail($id);
-        
-        if($request->password){
-            $request['password'] = bcrypt($request['password']);
-        }
+        try {
+            
+            
+            if($request->password){
+                $request['password'] = bcrypt($request['password']);
+            }
 
-        if($admin->update($request->all())){
-            return response()->json([
-                'message' => 'Administrador atualizado com sucesso',
-                'admin' => $admin,
-            ]);
-        } else{
-            return response()->json([
-                'message' => 'Falha ao atualizar administrador',
-                'admin' => $admin,
-            ]);
+            if($admin->update($request->all())){
+                return response()->json([
+                    'message' => 'Administrador atualizado com sucesso',
+                    'admin' => $admin,
+                ]);
+            } else{
+                return response()->json([
+                    'message' => 'Falha ao atualizar administrador',
+                    'admin' => $admin,
+                ]);
+            }
+        } catch (JWTException $e) {
+            return response()->json(['error' => 'Não foi possível criar o token'], 500);
         }
     }
 
     public function delete($id){
-        $admin = Admin::findOrFail($id);
-        if($admin->delete()){
-            return response()->json([
-                'message' => 'Administrador deletado com sucesso',
-                'admin'=> $admin,
-            ]);
-        }else{
+
+        try{
+            $admin = Admin::findOrFail($id);
+            if(Admin::destroy($id)){
+                return response()->json([
+                    'message' => 'Administrador deletado com sucesso',
+                    'admin'=> $admin,
+                ]);
+            }else{
+                return response()->json([
+                    'message' => 'Falha ao deletar administrador',
+                ]);
+            }
+        } catch(\Exception $e){
             return response()->json([
                 'message' => 'Falha ao deletar administrador',
             ]);

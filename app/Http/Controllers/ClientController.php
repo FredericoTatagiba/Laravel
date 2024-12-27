@@ -26,12 +26,12 @@ class ClientController extends Controller
         }
     }
 
-    public function read($id){
+    public function show($id){
 
         $user = Client::find($id);
         
         if(!$user) {
-            return response()->json(['message'=>'Usuario não encontrado', 404]);
+            return response()->json(['message'=>'Usuario não encontrado'], 404);
         }
         return response()->json($user);
     }
@@ -54,7 +54,8 @@ class ClientController extends Controller
     }
 
     public function delete($id){
-        $client = Client::find($id)->delete();
+        $client = Client::find($id);
+        Client::destroy($id);
         return response()->json([
             'message'=> 'Usuario deletado com sucesso',
             'client'=> $client,

@@ -51,10 +51,13 @@ class DiscountController extends Controller
     public function delete($id){
         try{
             $discount = Discount::find($id);
+            
             if(!$discount) {
                 return response()->json(['message'=>'Desconto não existe', 404]);
             }
-            $discount->delete();
+
+            Discount::destroy($id);
+
             return response()->json(['message'=> 'Desconto apagado com sucesso', 'discount'=>$discount],200);
 
         } catch(\Exception $e) {

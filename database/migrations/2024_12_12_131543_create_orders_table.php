@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->foreignId('client_iddd')->constrained();
-            $table->string('delivery_addresse');
+            $table->string('delivery_address');
             $table->decimal('total_price', 50, 2);
             $table->decimal('discount', 50, 2)->default(0);
             $table->string('status');

@@ -51,7 +51,8 @@ class ProductController extends Controller
     }
 
     public function delete($id){
-        $product = Product::find($id)->delete();
+        $product = Product::find($id);
+        Product::destroy($id);
         return response()->json([
             'message'=> 'Produto apagado com sucesso', 
             'product' => $product

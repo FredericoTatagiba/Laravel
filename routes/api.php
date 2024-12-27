@@ -23,51 +23,52 @@ Route::prefix('admin')
         Route::delete( '/{id}','delete');
 });
 
-//Rotas Cliente (Protegidas com JWT)
-Route::prefix('client')
+Route::middleware('auth:api')
+    ->group(function () {
+
+    //Rotas Clientes
+    Route::prefix('client')
     ->controller(ClientController::class)
-    ->middleware('auth:api')
     ->group(function () {
         Route::post('/register', 'store');
-        Route::get('/{id}','read');
+        Route::get('/{id}/show','show');
         Route::get('/all','all');
         Route::put('/{id}','update');
         Route::delete('/{id}','delete');
-});
+    });
 
 
-// Rotas Produtos (Protegidas com JWT)
-Route::prefix('product')
+    // Rotas Produtos
+    Route::prefix('product')
     ->controller(ProductController::class)
-    ->middleware('auth:api')
     ->group(function () {
         Route::post('/register', 'register');
         Route::get('/{id}/show','read');
         Route::get('/all','all');
         Route::put('/{id}','update');
         Route::delete('/{id}','delete');
-});
+    });
 
 
-// Rotas Pedidos (Protegidas com JWT)
-Route::prefix('order')
+    // Rotas Pedidos
+    Route::prefix('order')
     ->controller(OrderController::class)
-    ->middleware('auth:api')
     ->group(function () {
         Route::post('/make', 'store');
-        Route::get('/{id}','read');
+        Route::get('/{id}/show','read');
         Route::get('/all','all');
         Route::put('/{id}/update','update');
         Route::put('/{id}/cancel','cancel');
         Route::put('/{id}/paid','paid');
-});
+    });
 
-Route::prefix('discount')
+    //Rotas Descontos
+    Route::prefix('discount')
     ->controller(DiscountController::class)
-    ->middleware('auth:api')
     ->group(function () {
         Route::post('/register', 'store');
         Route::get('/{id}','show');
         Route::put('/{id}','update');
         Route::delete('/{id}','delete');
     });
+});
