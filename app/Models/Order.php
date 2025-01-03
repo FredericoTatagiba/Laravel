@@ -23,6 +23,10 @@ class Order extends Model
         self::STATUS_PENDING => "pending",
         self::STATUS_CANCELED => "canceled",
         self::STATUS_REFUNDED => "refunded",
+
+     ];
+
+     const PAYMENT_LABEL = [
         self::PAYMENT_CARD => "card",
         self::PAYMENT_CASH => "cash",
         self::PAYMENT_PIX => "pix",
@@ -60,6 +64,15 @@ class Order extends Model
     public function setStatusCanceled(){
         $this->status = $this::STATUS_CANCELED;
         $this->save();
+    }
+
+    //Método para retornar o status e tipo de pagamento do pedido em formato de texto
+    public function getStatusLabel(){
+        return $this::STATUS_LABEL[$this->status]?? "undefined";
+    }
+
+    public function getPaymentLabel(){
+        return $this::PAYMENT_LABEL[$this->payment_method]?? "undefined";
     }
 
 
