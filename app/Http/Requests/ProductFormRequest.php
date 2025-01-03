@@ -10,6 +10,7 @@ class ProductFormRequest extends FormRequest
     {
         return [
             "name"=> "required|string|min:5|max:255",
+            "description"=> "nullable|string",
             "stock"=> "required|integer|min:0",
             "price"=> "required|numeric|min:0.01",
         ];

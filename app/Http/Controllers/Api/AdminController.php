@@ -19,18 +19,21 @@ class AdminController extends Controller
     }
 
     public function register(AdminFormRequest $request){
-        
-        $request['password'] = bcrypt($request['password']); // Encripta a senha
+        try {
+            $request['password'] = bcrypt($request['password']); // Encripta a senha
 
-        $admin = Admin::create($request->all());
+            $admin = Admin::create($request->all());
 
-        $token = JWTAuth::fromUser($admin);
+            $token = JWTAuth::fromUser($admin);
 
-        return response()->json([
-            'message' => 'Administrador criado com sucesso',
-            'user' => $admin,
-            'token' => $token,
-        ], 201);
+            return response()->json([
+                'message' => 'Administrador criado com sucesso',
+                'user' => $admin,
+                'token' => $token,
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Erro ao registrar administrador'], 500);
+        }
     }
 
     public function login(Request $request){
@@ -50,8 +53,6 @@ class AdminController extends Controller
     public function update(AdminUpdateRequest $request, $id){
         $admin = Admin::findOrFail($id);
         try {
-            
-            
             if($request->password){
                 $request['password'] = bcrypt($request['password']);
             }
@@ -67,29 +68,28 @@ class AdminController extends Controller
                     'admin' => $admin,
                 ]);
             }
-        } catch (JWTException $e) {
-            return response()->json(['error' => 'Não foi possível criar o token'], 500);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Erro ao atualizar administrador'], 500);
         }
     }
 
     public function delete($id){
-
-        try{
+        try {
             $admin = Admin::findOrFail($id);
             if(Admin::destroy($id)){
                 return response()->json([
                     'message' => 'Administrador deletado com sucesso',
                     'admin'=> $admin,
                 ]);
-            }else{
+            } else {
                 return response()->json([
                     'message' => 'Falha ao deletar administrador',
                 ]);
             }
         } catch(\Exception $e){
             return response()->json([
-                'message' => 'Falha ao deletar administrador',
-            ]);
+                'message' => 'Erro ao deletar administrador',
+            ], 500);
         }
     }
 
@@ -116,25 +116,47 @@ class AdminController extends Controller
         ]);
     }
 
-    public function read($id){
-        $admin = Admin::find($id);
-        if(!$admin) {
-            return response()->json(['message'=>'Administrador não encontrado'], 404);
+    public function show($id){
+        try {
+            $admin = Admin::find($id);
+            if(!$admin) {
+                return response()->json(['message'=>'Administrador não encontrado'], 404);
+            }
+            return response()->json($admin);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Erro ao buscar administrador'], 500);
         }
-        return response()->json($admin);
     }
 
-   
-    public function all(){
-        $admins = Admin::all();
-        return response()->json($admins);
+    public function index(Request $request){
+        try {
+            if($request->has('name')){
+                $admins = Admin::where('name', 'like', '%' . $request->name . '%')
+                                ->paginate(5);
+                return response()->json($admins);
+            }
+            if($request->has('email')){
+                $admins = Admin::where('email', 'like', '%' . $request->email . '%')
+                                ->paginate(5);
+                return response()->json($admins);
+            }
+            //return Admin::paginate(5);
+            // $admins = Admin::all();
+            $admins = Admin::paginate(5);
+
+            return response()->json($admins);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Erro ao buscar administradores'], 500);
+        }
     }
 
     public function refresh()
     {
-        $newToken = JWTAuth::refresh();
-        return $this->respondWithToken($newToken);
+        try {
+            $newToken = JWTAuth::refresh();
+            return $this->respondWithToken($newToken);
+        } catch (JWTException $e) {
+            return response()->json(['error' => 'Não foi possível atualizar o token'], 500);
+        }
     }
-
-
 }

@@ -17,7 +17,7 @@ class Order extends Model
     //  ];
 
     protected $fillable = [
-        "client_id", "delivery_address", "total_price", "status", "discount",
+        "client_id", "delivery_address", "total_price", "status", "discount", "payment_method", "protocol"
     ];
 
     public function products()

@@ -3,9 +3,9 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use App\Http\Requests\OrderProductsFormRequest;
+use App\Http\Requests\Old___OrderProductsFormRequest;
 
-class OrderFormRequest extends FormRequest
+class Old___OrderFormRequest extends FormRequest
 {
 
     public function rules(): array
@@ -14,7 +14,7 @@ class OrderFormRequest extends FormRequest
             "client_id" => "required|integer|exists:clients,id", // Validar se o cliente existe
             "delivery_address" => "required|string|max:500", // Validar endereço
             "products" => "required|array", // Lista de produtos
-            "products.*"=>[new OrderProductsFormRequest]
+            "products.*"=>[new Old___OrderProductsFormRequest]
         ];
     }
 

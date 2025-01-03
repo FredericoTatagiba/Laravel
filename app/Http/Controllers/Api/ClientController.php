@@ -8,59 +8,89 @@ use App\Http\Requests\ClientUpdateRequest;
 use App\Models\Client;
 use Illuminate\Http\Request;
 use Tymon\JWTAuth\Exceptions\JWTException;
+use Exception;
 
-//Logica do Usuario. falta o JWT
 class ClientController extends Controller
 {
     public function store(ClientFormRequest $request){
-        try{
-            $user = Client::create($request->all());
+        try {
+            $client = Client::create($request->all());
             return response()->json([
                 'message' => 'Usuário criado com sucesso',
-                'user' => $user,
+                'client' => $client,
             ], 201);
-
-        } catch(JWTException $e) {
-            return response()->json([
-                'message' => 'Falha ao criar usuário',
-            ], 500);
+        } catch (Exception $e) {
+            return response()->json(['message' => 'Erro ao criar usuário', 'error' => $e->getMessage()], 500);
         }
     }
 
     public function show($id){
-
-        $user = Client::find($id);
-        
-        if(!$user) {
-            return response()->json(['message'=>'Usuario não encontrado'], 404);
+        try {
+            $client = Client::find($id);
+            
+            if(!$client) {
+                return response()->json(['message'=>'Usuario não encontrado'], 404);
+            }
+            return response()->json($client);
+        } catch (Exception $e) {
+            return response()->json(['message' => 'Erro ao buscar usuário', 'error' => $e->getMessage()], 500);
         }
-        return response()->json($user);
     }
 
-    public function all(){
-        $clients = Client::all();
-        return $clients;
+    public function index(Request $request){
+        try {
+            if($request->has('name')){
+                $clients = Client::where('name', 'like', '%' . $request->name . '%')
+                                ->paginate(5);
+                return response()->json($clients);
+            }
+            if($request->has('cpf')){
+                $clients = Client::where('cpf', 'like', '%' . $request->cpf . '%')
+                                ->paginate(5);
+                return response()->json($clients);
+            }
+            if($request->has('email')){
+                $clients = Client::where('email', 'like', '%' . $request->email . '%')
+                                ->paginate(5);
+                return response()->json($clients);
+            }
+
+            $clients = Client::paginate(5);
+            return response()->json($clients);
+        } catch (Exception $e) {
+            return response()->json(['message' => 'Erro ao buscar clientes', 'error' => $e->getMessage()], 500);
+        }
     }
 
     public function update(ClientUpdateRequest $request, $id)
     {
-        $client = Client::findOrFail($id);
+        try {
+            $client = Client::findOrFail($id);
 
-        $client->update($request->all());
+            $client->update($request->all());
 
-        return response()->json([
-            'message' => 'Usuario atualizado com sucesso.',
-            'client' => $client,
-        ]);
+            return response()->json([
+                'message' => 'Usuario atualizado com sucesso.',
+                'client' => $client,
+            ]);
+        } catch (Exception $e) {
+            return response()->json(['message' => 'Erro ao atualizar usuário', 'error' => $e->getMessage()], 500);
+        }
     }
 
     public function delete($id){
-        $client = Client::find($id);
-        Client::destroy($id);
-        return response()->json([
-            'message'=> 'Usuario deletado com sucesso',
-            'client'=> $client,
-        ], 200);
+        try {
+            $client = Client::find($id);
+            if (!$client) {
+                return response()->json(['message' => 'Usuario não encontrado'], 404);
+            }
+            Client::destroy($id);
+            return response()->json([
+                'message'=> 'Usuario deletado com sucesso',
+                'client'=> $client,
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json(['message' => 'Erro ao deletar usuário', 'error' => $e->getMessage()], 500);
+        }
     }
-
 }

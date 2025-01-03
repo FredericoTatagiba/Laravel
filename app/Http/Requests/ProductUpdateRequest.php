@@ -10,6 +10,7 @@ class ProductUpdateRequest extends FormRequest
     {
         return [
             "name"=> "nullable|string|min:5|max:255",
+            "description"=> "nullable|string",
             "stock"=> "nullable|integer|min:0",
             "price"=> "nullable|numeric|min:0.01",
         ];

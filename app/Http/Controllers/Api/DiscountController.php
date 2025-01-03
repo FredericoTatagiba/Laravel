@@ -12,6 +12,31 @@ class DiscountController extends Controller
 {
     //Criar o CRUD para descontos. Pode ter delete.
     
+    public function index(Request $request){
+        try{
+
+            //Busca por preço
+            if($request->has('price')){
+                $discounts = Discount::where('name', 'like', '%' . $request->name . '%')
+                                ->paginate(5);
+                return response()->json($discounts);
+            }
+
+            //Busca por desconto
+            if($request->has('discount')){
+                $discounts = Discount::where('discount', 'like', '%' . $request->discount . '%')
+                                ->paginate(5);
+                return response()->json($discounts);
+            }
+            
+            //Busca todos caso não tenha nenhum filtro
+            $discounts = Discount::paginate(5);
+            return response()->json($discounts, 200);
+        }catch(\Exception $e){
+            return response()->json(['message'=> 'Falha ao buscar descontos'],500);
+        }
+    }
+
     public function store(DiscountFormRequest $request){
         try{
             $discount = Discount::create($request->all());

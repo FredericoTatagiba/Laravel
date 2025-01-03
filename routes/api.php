@@ -11,14 +11,22 @@ Route::get('/', function () {
     return redirect('/');
 });
 
+/* Rotas de autenticação */
+/*  
+    Algumas rotas tem seu nome diferente do metodo chamado
+    mas isto é apenas para facilitar o meu entendimento do que estou fazendo
+    podendo ser totalmente ignorados.  
+*/
+
+
 //Rotas Administrador
 Route::prefix('admin')
     ->controller(AdminController::class)
     ->group(function () {
         Route::post('/register', 'register');
         Route::post('/login','login')->name('login');
-        Route::get('/{id}/show','read');
-        Route::get('/all','all');
+        Route::get('/{id}','show');
+        Route::get('/','index');
         Route::put('/{id}','update');
         Route::delete( '/{id}','delete');
 });
@@ -31,8 +39,8 @@ Route::middleware('auth:api')
     ->controller(ClientController::class)
     ->group(function () {
         Route::post('/register', 'store');
-        Route::get('/{id}/show','show');
-        Route::get('/all','all');
+        Route::get('/{id}','show');
+        Route::get('/','index');
         Route::put('/{id}','update');
         Route::delete('/{id}','delete');
     });
@@ -42,9 +50,9 @@ Route::middleware('auth:api')
     Route::prefix('product')
     ->controller(ProductController::class)
     ->group(function () {
-        Route::post('/register', 'register');
-        Route::get('/{id}/show','read');
-        Route::get('/all','all');
+        Route::post('/register', 'store');
+        Route::get('/{id}','show');
+        Route::get('/','index');
         Route::put('/{id}','update');
         Route::delete('/{id}','delete');
     });
@@ -54,10 +62,10 @@ Route::middleware('auth:api')
     Route::prefix('order')
     ->controller(OrderController::class)
     ->group(function () {
-        Route::post('/store', 'store');
-        Route::get('/{id}/show','read');
-        Route::get('/all','all');
-        Route::put('/{id}/update','update');
+        Route::post('/create', 'store');
+        Route::get('/{id}','show');
+        Route::get('/','index');
+        Route::put('/{id}','update');
         Route::put('/{id}/cancel','cancel');
         Route::put('/{id}/paid','paid');
     });
@@ -68,6 +76,7 @@ Route::middleware('auth:api')
     ->group(function () {
         Route::post('/register', 'store');
         Route::get('/{id}','show');
+        Route::get('/','index');
         Route::put('/{id}','update');
         Route::delete('/{id}','delete');
     });
