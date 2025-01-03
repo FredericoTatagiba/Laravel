@@ -159,6 +159,67 @@ class OrderController extends Controller
         }
     }
     public function update(Request $request, $id){
-        
+        $order = Order::find($id);
+        if(!$order){
+            return response()->json(['message'=>'Pedido não encontrado'], 404);
+        }
+
+        $validated = $request->validate([
+            'delivery_address' => 'nullable|string|max:255',
+            'products' => 'nullable|array|min:1',
+            'products.*.id' => 'required|exists:products,id',
+            'products.*.quantity'=> 'required_with:products|integer|min:1',
+        ]);
+
+        if(isset($validated['products'])){
+            $products = $validated['products'];
+
+            $prodIds = array_column($products, 'id');
+            $existingProducts = $order->products->get();
+
+            
+
+        }
+
+
+    }
+
+    public function cancel($id)
+    {
+        try {
+            $order = Order::findOrFail($id);
+            
+            //Verifica se o status do pedido pode ser alterado.
+            if ($order->status != Order::STATUS_PENDING) {
+                return response()->json(['message' => 'Pedido já pago/cancelado.'], 304);
+            }
+
+            //Altera o status do pedido para cancelado.
+            $order->setStatusCanceled();
+            return response()->json(['message' => 'Pedido cancelado com sucesso.'], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Erro ao cancelar o pedido: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+    public function paid($id)
+    {
+        try {
+            $order = Order::findOrFail($id);
+            
+            //Verifica se o status do pedido pode ser alterado.
+            if ($order->status != Order::STATUS_PENDING) {
+                return response()->json(['message' => 'Pedido já pago/cancelado.'], 304);
+            }
+
+            //Altera o status do pedido para pago.
+            $order->setStatusPaid();
+            return response()->json(['message' => 'Pedido pago com sucesso.'], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Erro ao processar o pagamento do pedido: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 }
