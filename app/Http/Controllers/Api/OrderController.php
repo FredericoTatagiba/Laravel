@@ -28,9 +28,9 @@ class OrderController extends Controller
             return response()->json(['message'=> 'Falha ao listar pedidos'],500);
         }
     }
+
     public function show($id){
         try {
-
             $order = Order::find($id);
 
             if(!$order) {
@@ -42,7 +42,8 @@ class OrderController extends Controller
             return response()->json(['message'=> 'Falha ao buscar pedido'],500);
         }
     }
-        public function destroy($id){
+
+    public function destroy($id){
         try {
             $order = Order::find($id);
             if(!$order) {
@@ -54,6 +55,7 @@ class OrderController extends Controller
             return response()->json(['message'=> 'Falha ao deletar pedido'],500);
         }
     }
+
     public function store(Request $request){
         try {
             // Validar a existência do cliente
@@ -68,6 +70,7 @@ class OrderController extends Controller
                 'products.*.id' => 'required|exists:products,id', // Verificar se o produto existe
                 'products.*.quantity' => 'required|integer|min:1', // Verificar se a quantidade é positiva
                 'delivery_address' => 'required|string|max:255',
+                'payment_method' => 'required|integer|in:10,11,12',
             ]);
 
             // Obter os produtos do pedido
@@ -119,6 +122,7 @@ class OrderController extends Controller
                     'total_price' => round($totalPrice, 2),
                     'discount' => $discount ? $discount->discount : 0,
                     'status' => Order::STATUS_PENDING,
+                    'payment_method' => $validated['payment_method'],
                 ]);
 
                 //Adicionar os produtos ao pedido
@@ -137,13 +141,6 @@ class OrderController extends Controller
                     // Atualizar o estoque
                     $productDetail->decrement('stock', $product['quantity']);
 
-                    //Apenas para visualização
-                    $orderProducts[] = [
-                        'id' => $order->id,
-                        'product_id' => $product['id'],
-                        'quantity' => $product['quantity'],
-                        'unity_price' => $productDetail->price,
-                    ];
                 }
 
                 return response()->json([
@@ -158,30 +155,82 @@ class OrderController extends Controller
             return response()->json(['message'=> 'Erro ao processar pedido'],500);
         }
     }
+
     public function update(Request $request, $id){
-        $order = Order::find($id);
-        if(!$order){
-            return response()->json(['message'=>'Pedido não encontrado'], 404);
+        try {
+            $order = Order::find($id);
+            if (!$order) {
+                return response()->json(['message' => 'Pedido não encontrado'], 404);
+            }
+
+            $validated = $request->validate([
+                'delivery_address' => 'nullable|string|max:255',
+                'products' => 'nullable|array|min:1',
+                'products.*.id' => 'required|exists:products,id',
+                'products.*.quantity' => 'required_with:products|integer|min:1',
+            ]);
+
+            $currentProducts = $order->products->keyBy('id'); // Produtos atuais no pedido
+
+            if (isset($validated['products'])) {
+                $products = $validated['products'];
+                $prodIds = array_column($products, 'id');
+                $productsDetails = Product::whereIn('id', $prodIds)->get()->keyBy('id');
+
+                // Verificar estoque e processar novos produtos
+                foreach ($products as $product) {
+                    $prodDetail = $productsDetails->get($product['id']);
+
+                    if (!$prodDetail) {
+                        return response()->json(['message' => 'Produto não encontrado'], 404);
+                    }
+
+                    if ($prodDetail->stock < $product['quantity']) {
+                        return response()->json([
+                            'message' => 'Estoque insuficiente do produto de ID: ' . $product['id'],
+                            'stock' => 'Estoque disponível: ' . $prodDetail->stock,
+                        ], 400);
+                    }
+                }
+
+                // Reabastecer estoque de produtos removidos
+                foreach ($currentProducts as $currentProductId => $currentProduct) {
+                    if (!in_array($currentProductId, $prodIds)) {
+                        $product = Product::find($currentProductId);
+                        $product->stock += $currentProduct->pivot->quantity; // Reabastecer estoque
+                        $product->save();
+                    }
+                }
+
+                // Atualizar o estoque dos produtos adicionados ou modificados
+                foreach ($products as $product) {
+                    $prodDetail = $productsDetails->get($product['id']);
+                    $previousQuantity = $currentProducts->get($product['id'])->pivot->quantity ?? 0;
+
+                    // Ajustar estoque baseado na nova quantidade
+                    $prodDetail->stock -= ($product['quantity'] - $previousQuantity);
+                    $prodDetail->save();
+                }
+
+                // Atualizar os produtos no pedido
+                $order->products()->sync(
+                    collect($products)->mapWithKeys(fn($product) => [
+                        $product['id'] => ['quantity' => $product['quantity']]
+                    ])->toArray()
+                );
+            }
+
+            // Atualizar endereço de entrega, se fornecido
+            if (isset($validated['delivery_address'])) {
+                $order->delivery_address = $validated['delivery_address'];
+            }
+
+            $order->save();
+
+            return response()->json(['message' => 'Pedido atualizado com sucesso', 'order' => $order], 200);
+        } catch (\Exception $e) {
+            return response()->json(['message'=> 'Erro ao atualizar pedido'],500);
         }
-
-        $validated = $request->validate([
-            'delivery_address' => 'nullable|string|max:255',
-            'products' => 'nullable|array|min:1',
-            'products.*.id' => 'required|exists:products,id',
-            'products.*.quantity'=> 'required_with:products|integer|min:1',
-        ]);
-
-        if(isset($validated['products'])){
-            $products = $validated['products'];
-
-            $prodIds = array_column($products, 'id');
-            $existingProducts = $order->products->get();
-
-            
-
-        }
-
-
     }
 
     public function cancel($id)
@@ -194,8 +243,16 @@ class OrderController extends Controller
                 return response()->json(['message' => 'Pedido já pago/cancelado.'], 304);
             }
 
+            // Reabastece o estoque dos produtos associados ao pedido
+            foreach ($order->products as $product) {
+                $product->stock += $product->pivot->quantity; // Incrementa o estoque com a quantidade do pedido
+                $product->save();
+            }
+
+
             //Altera o status do pedido para cancelado.
             $order->setStatusCanceled();
+
             return response()->json(['message' => 'Pedido cancelado com sucesso.'], 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -203,6 +260,7 @@ class OrderController extends Controller
             ], 500);
         }
     }
+
     public function paid($id)
     {
         try {

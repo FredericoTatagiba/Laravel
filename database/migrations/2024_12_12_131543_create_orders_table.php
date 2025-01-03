@@ -18,8 +18,8 @@ return new class extends Migration
             $table->string('delivery_address');
             $table->decimal('total_price', 50, 2);
             $table->decimal('discount', 50, 2)->default(0);
-            $table->string('payment_method');
-            $table->string('status');
+            $table->integer('payment_method');
+            $table->integer('status');
             $table->timestamps();
         });
     }

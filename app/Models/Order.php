@@ -8,13 +8,24 @@ use App\Models\Client;
 class Order extends Model
 {
 
-    const STATUS_PAID = "paid";
-    const STATUS_PENDING = "pending";
-    const STATUS_CANCELED = "canceled";
+    const STATUS_PAID = 0;
+    const STATUS_PENDING = 1;
+    const STATUS_CANCELED = 2;
+    const STATUS_REFUNDED = 3;
 
-    // const STATUS_LABEL = [
-    //      self::STATUS_PAID => "Pago",
-    //  ];
+    const PAYMENT_CARD = 10;
+    const PAYMENT_CASH = 11;
+    const PAYMENT_PIX = 12;
+
+    const STATUS_LABEL = [
+        self::STATUS_PAID => "paid",
+        self::STATUS_PENDING => "pending",
+        self::STATUS_CANCELED => "canceled",
+        self::STATUS_REFUNDED => "refunded",
+        self::PAYMENT_CARD => "card",
+        self::PAYMENT_CASH => "cash",
+        self::PAYMENT_PIX => "pix",
+     ];
 
     protected $fillable = [
         "client_id", "delivery_address", "total_price", "status", "discount", "payment_method", "protocol"
