@@ -22,6 +22,14 @@ class OrderController extends Controller
                                 ->paginate(5);
                 return response()->json($orders);
             }
+            if($request->has('cpf')){
+                $client = Client::where('cpf', 'like','%'.$request->cpf.'%')->first();
+                if(!$client){
+                    return response()->json(['message'=>'Cliente não encontrado'], 404);
+                }
+                $orders = Order::where('client_id', $client->id)->paginate(5);
+                return response()->json($orders);
+            }
             $orders = Order::paginate(5);
             return response()->json($orders);
         } catch (\Exception $e) {
